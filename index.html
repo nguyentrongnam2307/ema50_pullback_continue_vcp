@@ -401,6 +401,15 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
         </div>
       </div>
 
+
+      <!-- Hàng 1.8: Thống kê cặp tiền — full width -->
+      <div style="margin-top:0.8rem;">
+        <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
+          <div class="log-card-label" id="lsym-stats-label">📊 Cặp Tiền · TP / SL / BE</div>
+          <div id="lsym-stats-body"></div>
+        </div>
+      </div>
+
       <!-- Hàng 2: Symbol RR theo từng Case — full width -->
       <div style="margin-top:0.8rem;">
         <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
@@ -2310,14 +2319,12 @@ function logRenderStats(){
   // ── Thống kê cặp tiền (TP / SL / BE nhiều nhất) ──
   // Dùng logTradesF (đã lọc tháng nếu có)
   (function renderSymbolOutcomeStats() {
-    let el = document.getElementById('lmonth-sym-stats');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'lmonth-sym-stats';
-      el.style.cssText = 'margin-top:1rem;border-top:1px solid var(--border);padding-top:0.9rem;';
-      const monthEl2 = document.getElementById('lmonth-stats');
-      if (monthEl2) monthEl2.appendChild(el);
-    }
+    const bodyEl = document.getElementById('lsym-stats-body');
+    const labelEl = document.getElementById('lsym-stats-label');
+    if (!bodyEl) return;
+
+    // Cập nhật label tháng
+    if (labelEl) labelEl.textContent = '📊 Cặp Tiền · TP / SL / BE' + (logStatsMonth ? ' · ' + logStatsMonth.split('-').reverse().join('/') : ' · Tất cả');
 
     // Tập lệnh dùng để tính (cùng logTradesF)
     const symMap = {};
@@ -2334,12 +2341,14 @@ function logRenderStats(){
       .map(([sym, s]) => ({ sym, ...s }))
       .sort((a, b) => b.total - a.total);
 
-    if (!rows.length) { el.innerHTML = ''; return; }
+    if (!rows.length) { bodyEl.innerHTML = '<div style="color:var(--muted);padding:0.5rem;font-size:0.78rem">Chưa có dữ liệu</div>'; return; }
 
     // Tìm max để vẽ bar
-    const maxTP  = Math.max(...rows.map(r=>r.tp),  1);
-    const maxSL  = Math.max(...rows.map(r=>r.sl),  1);
-    const maxBE  = Math.max(...rows.map(r=>r.be),  1);
+    const maxTP = Math.max(...rows.map(r=>r.tp), 1);
+    const maxSL = Math.max(...rows.map(r=>r.sl), 1);
+    const maxBE = Math.max(...rows.map(r=>r.be), 1);
+    const topTP = Math.max(...rows.map(r=>r.tp));
+    const topSL = Math.max(...rows.map(r=>r.sl));
 
     const barHtml = (val, max, color) =>
       `<div style="display:flex;align-items:center;gap:4px;">
@@ -2348,8 +2357,6 @@ function logRenderStats(){
         </div>
         <span style="font-size:0.68rem;font-weight:700;color:${color};min-width:18px;text-align:right">${val}</span>
       </div>`;
-
-    const label = `<div style="font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:500;margin-bottom:0.6rem;">📊 Cặp Tiền · TP / SL / BE${logStatsMonth?' · '+logStatsMonth.split('-').reverse().join('/'):'  · Tất cả'}</div>`;
 
     // Table desktop
     const tableHtml2 = `<div class="lmonth-table-wrap"><table style="min-width:480px">
@@ -2366,8 +2373,8 @@ function logRenderStats(){
         const closed = r.tp + r.sl;
         const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
         const wrColor = wr2===null?'var(--faint)':wr2>=60?'#16a34a':wr2>=40?'#d97706':'#dc2626';
-        const highlight = r.tp===Math.max(...rows.map(x=>x.tp))&&r.tp>0 ? 'background:#dbeafe;border-left:3px solid #2563eb' :
-                          r.sl===Math.max(...rows.map(x=>x.sl))&&r.sl>0 ? 'background:#fff7ed;border-left:3px solid #ea580c' : 'border-left:3px solid transparent';
+        const highlight = r.tp===topTP&&r.tp>0 ? 'background:#dbeafe;border-left:3px solid #2563eb' :
+                          r.sl===topSL&&r.sl>0 ? 'background:#fff7ed;border-left:3px solid #ea580c' : 'border-left:3px solid transparent';
         return `<tr style="${highlight}">
           <td style="font-weight:700;font-size:0.8rem">${r.sym}</td>
           <td style="color:var(--ink-2)">${r.total}</td>
@@ -2380,14 +2387,22 @@ function logRenderStats(){
       </tbody>
     </table></div>`;
 
-    // Cards mobile
+    // Cards mobile — highlight bằng border-left + background inline
     const cardsHtml2 = `<div class="lmonth-cards">${rows.map(r => {
       const closed = r.tp + r.sl;
       const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
       const wrColor = wr2===null?'var(--faint)':wr2>=60?'#16a34a':wr2>=40?'#d97706':'#dc2626';
-      return `<div class="lmonth-card">
+      const isTopTP = r.tp===topTP && r.tp>0;
+      const isTopSL = r.sl===topSL && r.sl>0 && !isTopTP;
+      const cardStyle = isTopTP ? 'background:#dbeafe;border-color:#2563eb;border-left:4px solid #2563eb'
+                      : isTopSL ? 'background:#fff7ed;border-color:#ea580c;border-left:4px solid #ea580c'
+                      : '';
+      const badge = isTopTP ? '<span style="font-size:0.55rem;font-weight:700;background:#2563eb;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">TP MAX</span>'
+                  : isTopSL ? '<span style="font-size:0.55rem;font-weight:700;background:#ea580c;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">SL MAX</span>'
+                  : '';
+      return `<div class="lmonth-card" style="${cardStyle}">
         <div class="lmonth-card-top">
-          <span class="lmonth-card-name">${r.sym}</span>
+          <span class="lmonth-card-name">${r.sym}${badge}</span>
           <span class="lmonth-card-wr" style="color:${wrColor}">${wr2!==null?wr2+'% WR':'— WR'}</span>
         </div>
         <div class="lmonth-card-stats" style="grid-template-columns:repeat(4,1fr)">
@@ -2399,7 +2414,7 @@ function logRenderStats(){
       </div>`;
     }).join('')}</div>`;
 
-    el.innerHTML = label + tableHtml2 + cardsHtml2;
+    bodyEl.innerHTML = tableHtml2 + cardsHtml2;
   })();
 
   // Equity curve
