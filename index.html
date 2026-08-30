@@ -814,9 +814,17 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
         <input type="file" id="lf-img-result" accept="image/*" multiple style="display:none" onchange="logHandleResultImgs(this)"/>
       </div>
     </div>
-    <div class="log-modal-foot">
-      <button class="log-btn-sec" onclick="logCloseModal('lmodal-trade')" data-i18n="btn.cancel">Hủy</button>
-      <button class="log-btn-pri" onclick="logSaveTrade()" data-i18n="btn.save.trade">💾 Lưu lệnh</button>
+    <div class="log-modal-foot" style="display:flex;align-items:center;">
+      <!-- View mode banner (ẩn mặc định) -->
+      <div id="lmodal-view-banner" style="display:none;flex:1;align-items:center;gap:8px;">
+        <span style="font-size:0.68rem;color:var(--muted);">👁 Chế độ xem</span>
+        <button onclick="logModalEnableEdit()" style="display:inline-flex;align-items:center;gap:5px;background:var(--ink);color:#fff;border:none;border-radius:5px;padding:0.3rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">✏️ Sửa lệnh</button>
+      </div>
+      <!-- Edit mode buttons -->
+      <div id="lmodal-edit-btns" style="display:flex;gap:0.5rem;justify-content:flex-end;flex:1;">
+        <button class="log-btn-sec" onclick="logCloseModal('lmodal-trade')" data-i18n="btn.cancel">Hủy</button>
+        <button class="log-btn-pri" onclick="logSaveTrade()" data-i18n="btn.save.trade">💾 Lưu lệnh</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1936,7 +1944,59 @@ window.logDeleteTrade = (id)=>{
   logRenderHistory();
   if(document.getElementById('log-page-stats')?.classList.contains('active')) logRenderStats();
 };
-window.logOpenTradeEdit = (id)=>{const t=logTrades.find(x=>x.id===id);if(t)logOpenTradeModal(t,null);};
+window.logOpenTradeEdit = (id)=>{const t=logTrades.find(x=>x.id===id);if(t){logOpenTradeModal(t,null);logSetViewMode(false);}};
+
+// ── VIEW / EDIT MODE ─────────────────────────────
+// Selector tất cả input/select/textarea/button bên trong form (không phải footer)
+const _MODAL_FORM_FIELDS = () => {
+  const modal = document.getElementById('lmodal-trade');
+  if(!modal) return [];
+  const grid = modal.querySelector('.log-form-grid');
+  if(!grid) return [];
+  return [...grid.querySelectorAll('input,select,textarea,button')];
+};
+
+window.logSetViewMode = function(viewOnly) {
+  // Toggle fields
+  _MODAL_FORM_FIELDS().forEach(el => {
+    if(viewOnly){
+      el.setAttribute('disabled','');
+      el.style.pointerEvents='none';
+      el.style.opacity = el.tagName==='BUTTON' ? '0.45' : '0.75';
+      el.style.cursor='default';
+    } else {
+      el.removeAttribute('disabled');
+      el.style.pointerEvents='';
+      el.style.opacity='';
+      el.style.cursor='';
+    }
+  });
+  // Toggle footer
+  const banner = document.getElementById('lmodal-view-banner');
+  const editBtns = document.getElementById('lmodal-edit-btns');
+  if(banner)   { banner.style.display   = viewOnly ? 'flex' : 'none'; }
+  if(editBtns) { editBtns.style.display = viewOnly ? 'none' : 'flex'; }
+  // Đổi title
+  const titleEl = document.getElementById('ltrade-modal-title');
+  if(titleEl && viewOnly) titleEl.textContent = '👁 Xem lệnh';
+};
+
+window.logModalEnableEdit = function() {
+  logSetViewMode(false);
+  const titleEl = document.getElementById('ltrade-modal-title');
+  if(titleEl) titleEl.textContent = window.t('js.modal.edit');
+};
+
+// Mở modal ở chế độ CHỈ XEM (từ Calendar)
+window.logOpenTradeView = (id) => {
+  const t = logTrades.find(x => x.id === id);
+  if(!t) return;
+  logOpenTradeModal(t, null);
+  // Đặt view mode sau khi modal render (có thể async do load ảnh)
+  logSetViewMode(true);
+  // Đảm bảo view mode sau khi ảnh xong
+  setTimeout(() => logSetViewMode(true), 400);
+};
 window.logViewImg = (id)=>{
   const url=window._logTradeImgs?.[id];if(!url)return;
   logOpenImgViewer(url,'');
@@ -2416,70 +2476,147 @@ function logRenderStats(){
       return '';
     };
 
-    // Table desktop
-    const tableHtml2 = `<div class="lmonth-table-wrap"><table style="min-width:480px">
-      <thead><tr>
-        <th>Cặp</th>
-        <th>Tổng</th>
-        <th style="color:#16a34a">TP ▲</th>
-        <th style="color:#dc2626">SL ▲</th>
-        <th style="color:#d97706">BE ▲</th>
-        <th>WR</th>
-      </tr></thead>
-      <tbody>
-      ${rows.map(r => {
-        const closed = r.tp + r.sl;
-        const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
-        const wrColor = wr2===null?'var(--faint)':wr2>=60?'#16a34a':wr2>=40?'#d97706':'#dc2626';
-        const kind = _kind(r);
-        const highlight = kind==='tp' ? 'background:#dbeafe;border-left:3px solid #2563eb'
-                        : kind==='sl' ? 'background:#fff7ed;border-left:3px solid #ea580c'
-                        : kind==='eq' ? 'background:#f5f3ff;border-left:3px solid #7c3aed'
-                        : 'border-left:3px solid transparent';
-        return `<tr style="${highlight}">
-          <td style="font-weight:700;font-size:0.8rem">${r.sym}</td>
-          <td style="color:var(--ink-2)">${r.total}</td>
-          <td>${barHtml(r.tp, maxTP, '#16a34a')}</td>
-          <td>${barHtml(r.sl, maxSL, '#dc2626')}</td>
-          <td>${barHtml(r.be, maxBE, '#d97706')}</td>
-          <td style="font-weight:700;color:${wrColor}">${wr2!==null?wr2+'%':'—'}</td>
-        </tr>`;
-      }).join('')}
-      </tbody>
-    </table></div>`;
-
-    // Cards mobile
+    // ── Badge & card style helpers ──
     const _badge = kind =>
-        kind==='tp' ? '<span style="font-size:0.55rem;font-weight:700;background:#2563eb;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">TP MAX</span>'
-      : kind==='sl' ? '<span style="font-size:0.55rem;font-weight:700;background:#ea580c;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">SL MAX</span>'
-      : kind==='eq' ? '<span style="font-size:0.55rem;font-weight:700;background:#7c3aed;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">SL = TP</span>'
+        kind==='tp' ? '<span style="font-size:0.52rem;font-weight:700;background:#2563eb;color:#fff;padding:2px 6px;border-radius:3px;margin-left:5px;letter-spacing:.3px;vertical-align:middle">TP MAX</span>'
+      : kind==='sl' ? '<span style="font-size:0.52rem;font-weight:700;background:#ea580c;color:#fff;padding:2px 6px;border-radius:3px;margin-left:5px;letter-spacing:.3px;vertical-align:middle">SL MAX</span>'
+      : kind==='eq' ? '<span style="font-size:0.52rem;font-weight:700;background:#7c3aed;color:#fff;padding:2px 6px;border-radius:3px;margin-left:5px;letter-spacing:.3px;vertical-align:middle">SL = TP</span>'
       : '';
-    const _cardStyle = kind =>
-        kind==='tp' ? 'background:#dbeafe;border-color:#2563eb;border-left:4px solid #2563eb'
-      : kind==='sl' ? 'background:#fff7ed;border-color:#ea580c;border-left:4px solid #ea580c'
-      : kind==='eq' ? 'background:#f5f3ff;border-color:#7c3aed;border-left:4px solid #7c3aed'
-      : '';
+    const _cardBorder = kind =>
+        kind==='tp' ? 'border-color:#93c5fd;border-left:4px solid #2563eb;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%)'
+      : kind==='sl' ? 'border-color:#fdba74;border-left:4px solid #ea580c;background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%)'
+      : kind==='eq' ? 'border-color:#c4b5fd;border-left:4px solid #7c3aed;background:linear-gradient(135deg,#faf5ff 0%,#ede9fe 100%)'
+      : 'border-left:4px solid #e0ddd8';
+    const _wrBg = kind =>
+        kind==='tp' ? 'background:rgba(37,99,235,.12);color:#1d4ed8'
+      : kind==='sl' ? 'background:rgba(234,88,12,.12);color:#c2410c'
+      : kind==='eq' ? 'background:rgba(124,58,237,.12);color:#6d28d9'
+      : 'background:var(--bg);color:var(--ink-2)';
 
-    const cardsHtml2 = `<div class="lmonth-cards">${rows.map(r => {
+    // ── Unified card grid (desktop + mobile, same layout) ──
+    const _renderCardGrid = (rowList, label) => rowList.map(r => {
       const closed = r.tp + r.sl;
       const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
-      const wrColor = wr2===null?'var(--faint)':wr2>=60?'#16a34a':wr2>=40?'#d97706':'#dc2626';
       const kind = _kind(r);
-      return `<div class="lmonth-card" style="${_cardStyle(kind)}">
-        <div class="lmonth-card-top">
-          <span class="lmonth-card-name">${r.sym}${_badge(kind)}</span>
-          <span class="lmonth-card-wr" style="color:${wrColor}">${wr2!==null?wr2+'% WR':'— WR'}</span>
+      const wrTxt = wr2!==null ? wr2+'% WR' : '— WR';
+      return `<div class="lsym-pair-card" style="border:1px solid #e0ddd8;border-radius:10px;padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.55rem;${_cardBorder(kind)}">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+          <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;min-width:0;">
+            <span style="font-weight:800;font-size:0.92rem;color:var(--ink);letter-spacing:.3px;white-space:nowrap">${r.sym}</span>
+            ${_badge(kind)}
+          </div>
+          <span style="font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;${_wrBg(kind)}">${wrTxt}</span>
         </div>
-        <div class="lmonth-card-stats" style="grid-template-columns:repeat(4,1fr)">
-          <div><div class="lmonth-card-stat-label">Tổng</div><div class="lmonth-card-stat-val">${r.total}</div></div>
-          <div><div class="lmonth-card-stat-label">TP</div><div class="lmonth-card-stat-val" style="color:#16a34a">${r.tp}</div></div>
-          <div><div class="lmonth-card-stat-label">SL</div><div class="lmonth-card-stat-val" style="color:#dc2626">${r.sl}</div></div>
-          <div><div class="lmonth-card-stat-label">BE</div><div class="lmonth-card-stat-val" style="color:#d97706">${r.be}</div></div>
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;text-align:center;border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07);padding:0.45rem 0;">
+          <div>
+            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-bottom:2px;">Tổng</div>
+            <div style="font-size:0.82rem;font-weight:700;color:var(--ink)">${r.total}</div>
+          </div>
+          <div>
+            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#15803d;margin-bottom:2px;">TP</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#16a34a">${r.tp}</div>
+          </div>
+          <div>
+            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#b91c1c;margin-bottom:2px;">SL</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#dc2626">${r.sl}</div>
+          </div>
+          <div>
+            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#a16207;margin-bottom:2px;">BE</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#d97706">${r.be}</div>
+          </div>
+        </div>
+        <!-- Bar row -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+          ${[['TP','#16a34a',r.tp,maxTP],['SL','#dc2626',r.sl,maxSL],['BE','#d97706',r.be,maxBE]].map(([lbl,col,val,mx])=>`
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:0.52rem;font-weight:700;color:${col};letter-spacing:.5px">${lbl}</span>
+              <span style="font-size:0.52rem;font-weight:700;color:${col}">${val}</span>
+            </div>
+            <div style="height:5px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden;">
+              <div style="height:5px;border-radius:3px;background:${col};width:${mx?Math.round(val/mx*100):0}%;transition:width .4s"></div>
+            </div>
+          </div>`).join('')}
         </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('');
 
-    bodyEl.innerHTML = tableHtml2 + cardsHtml2;
+    // ── Tab-filtered views ──
+    // "Tất cả"  → sort: pinned (tp/sl/eq) lên trước, rồi total desc
+    // "TP"      → sort: TP MAX lên đầu, rồi tp desc
+    // "SL"      → sort: SL MAX lên đầu, rồi sl desc
+    // "SL=TP"   → giữ nguyên
+    // TP tab: chỉ cặp tp > sl, sort: TP MAX lên đầu, rồi tp desc
+    const tpRows = [...rows]
+      .filter(r => r.tp > r.sl)
+      .sort((a,b) => {
+        const aMax = _kind(a)==='tp' ? 1 : 0;
+        const bMax = _kind(b)==='tp' ? 1 : 0;
+        if(bMax !== aMax) return bMax - aMax;
+        return b.tp - a.tp;
+      });
+    // SL tab: chỉ cặp sl > tp, sort: SL MAX lên đầu, rồi sl desc
+    const slRows = [...rows]
+      .filter(r => r.sl > r.tp)
+      .sort((a,b) => {
+        const aMax = _kind(a)==='sl' ? 1 : 0;
+        const bMax = _kind(b)==='sl' ? 1 : 0;
+        if(bMax !== aMax) return bMax - aMax;
+        return b.sl - a.sl;
+      });
+    // SL=TP tab: chỉ cặp tp === sl (và tp > 0)
+    const eqRows = rows.filter(r => r.tp === r.sl && r.tp > 0);
+    // Tất cả: tp>sl lên đầu, rồi sl>tp, rồi còn lại, mỗi nhóm sort total desc
+    const allRows = [...rows].sort((a,b) => {
+      const rank = r => r.tp>r.sl ? 2 : r.sl>r.tp ? 1 : 0;
+      if(rank(b) !== rank(a)) return rank(b) - rank(a);
+      return b.total - a.total;
+    });
+
+    const _tabBtn = (id, label, color, active) =>
+      `<button onclick="lsymTab('${id}')" id="lsym-tab-${id}"
+        style="padding:0.32rem 0.85rem;border-radius:20px;font-size:0.68rem;font-weight:700;cursor:pointer;
+               border:1.5px solid ${active?color:'var(--border-dark)'};
+               background:${active?color:'transparent'};
+               color:${active?'#fff':'var(--muted)'};
+               font-family:inherit;transition:all .15s;white-space:nowrap;">${label}</button>`;
+
+    const tabsHtml = `<div id="lsym-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.8rem;">
+      ${_tabBtn('all',  '📊 Tất cả',  '#374151', true)}
+      ${_tabBtn('tp',   '✅ TP',       '#2563eb', false)}
+      ${_tabBtn('sl',   '❌ SL',       '#ea580c', false)}
+      ${_tabBtn('eq',   '⚖️ SL = TP', '#7c3aed', false)}
+    </div>`;
+
+    const _grid = (rows2, emptyMsg) => rows2.length
+      ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">${_renderCardGrid(rows2)}</div>`
+      : `<div style="color:var(--muted);padding:0.8rem;font-size:0.78rem;text-align:center">${emptyMsg}</div>`;
+
+    const panelsHtml =
+      `<div id="lsym-panel-all">${_grid(allRows,'Chưa có dữ liệu')}</div>`+
+      `<div id="lsym-panel-tp"  style="display:none">${_grid(tpRows,'Không có cặp TP MAX')}</div>`+
+      `<div id="lsym-panel-sl"  style="display:none">${_grid(slRows,'Không có cặp SL MAX')}</div>`+
+      `<div id="lsym-panel-eq"  style="display:none">${_grid(eqRows,'Không có cặp SL = TP')}</div>`;
+
+    bodyEl.innerHTML = tabsHtml + panelsHtml;
+
+    // ── Tab switcher (inline, no global pollution) ──
+    window.lsymTab = (id) => {
+      ['all','tp','sl','eq'].forEach(t => {
+        const panel = document.getElementById('lsym-panel-'+t);
+        const btn   = document.getElementById('lsym-tab-'+t);
+        if(!panel||!btn) return;
+        const isActive = t===id;
+        panel.style.display = isActive ? '' : 'none';
+        const colorMap={all:'#374151',tp:'#2563eb',sl:'#ea580c',eq:'#7c3aed'};
+        const col = colorMap[t];
+        btn.style.background  = isActive ? col : 'transparent';
+        btn.style.borderColor = isActive ? col : 'var(--border-dark)';
+        btn.style.color       = isActive ? '#fff' : 'var(--muted)';
+      });
+    };
   })();
 
   // Equity curve
@@ -3226,14 +3363,15 @@ window.logRenderCalendar = function() {
           timeStr = String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
         }
         const ocLabel = oc ? `<span style="flex-shrink:0;font-size:0.5rem;font-weight:800;opacity:0.95;letter-spacing:0.5px;border-left:1px solid ${col.border};padding-left:4px;">${oc}</span>` : '';
-        pills += `<div title="${sym} · ${oc} · ${timeStr}" style="
+        pills += `<div title="${sym} · ${oc} · ${timeStr}" onclick="event.stopPropagation();logOpenTradeView('${t.id}')" style="
           display:flex;align-items:center;justify-content:space-between;
           background:${col.bg};border:1px solid ${col.border};
           border-radius:4px;padding:3px 6px;margin-bottom:3px;
           font-size:0.6rem;font-weight:700;color:${col.text};
           white-space:nowrap;overflow:hidden;cursor:pointer;
           line-height:1.4;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,.25);
-        ">
+          transition:filter .12s;
+        " onmouseover="this.style.filter='brightness(1.18)'" onmouseout="this.style.filter=''">
           <span style="overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px;flex:1;">📄 ${sym}</span>
           <span style="flex-shrink:0;opacity:0.9;font-size:0.58rem;">${timeStr}</span>
           ${ocLabel}
@@ -3248,7 +3386,11 @@ window.logRenderCalendar = function() {
       if(op) dots += `<span class="lcal-dot op">${op}</span>`;
 
       const isSelDay = window._calSelectedDay === day;
-      html += `<div data-day="${day}" onclick="${total>0?`logCalShowDayDetail(${day})`:''}" style="min-height:80px;border-radius:4px;border:1.5px solid ${isSelDay?'var(--blue)':borderColor};background:${isSelDay?'var(--blue-lt)':bgColor};padding:5px 6px;cursor:${total>0?'pointer':'default'};transition:box-shadow .12s,border-color .12s;position:relative;"
+      // Mobile: 1 lệnh → thẳng modal; nhiều lệnh → panel chọn
+      const mobileClick = total === 1
+        ? `event.stopPropagation();logOpenTradeView('${dayTrades[0].id}')`
+        : total > 1 ? `logCalShowDayDetail(${day})` : '';
+      html += `<div data-day="${day}" onclick="${mobileClick}" style="min-height:80px;border-radius:4px;border:1.5px solid ${isSelDay?'var(--blue)':borderColor};background:${isSelDay?'var(--blue-lt)':bgColor};padding:5px 6px;cursor:${total>0?'pointer':'default'};transition:box-shadow .12s,border-color .12s;position:relative;"
         onmouseover="if(${total}>0){this.style.boxShadow='0 2px 10px rgba(0,0,0,.10)';this.style.borderColor='var(--ink-2)';}"
         onmouseout="this.style.boxShadow='';this.style.borderColor='${isSelDay?'var(--blue)':borderColor}';">
         <div class="lcal-daynum" style="font-size:0.65rem;font-weight:${isToday?'800':'600'};color:${isToday?'var(--ink)':'var(--ink-2)'};margin-bottom:4px;text-align:right;">${day}</div>
@@ -3270,44 +3412,57 @@ window.logRenderCalendar = function() {
     }
 };
 
-// ── CALENDAR · Panel chi tiết ngày (chủ yếu dùng cho mobile) ──
+// ── CALENDAR · Panel chọn lệnh (mobile: nhiều lệnh trong 1 ngày) ──
 window.logCalShowDayDetail = function(day, keepSelection){
   const detailEl = document.getElementById('lcal-day-detail');
   if(!detailEl) return;
+
+  // Toggle: bấm lại ngày đang mở → đóng
   if(!keepSelection){
-    // Bấm lại đúng ngày đang mở → đóng panel; ngược lại → chọn ngày mới
     window._calSelectedDay = (window._calSelectedDay === day) ? null : day;
-    window.logRenderCalendar(); // render lại cả lưới (để tô sáng ô đang chọn) + panel chi tiết
+    window.logRenderCalendar();
     return;
   }
+
   const dayTrades = (window._calByDay && window._calByDay[day]) || [];
   const _pillColor = window._calPillColor || (()=>({bg:'#2d2d2d',border:'#6b7280',text:'#e5e7eb'}));
   const MONTH_NAMES = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
                        'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-  const titleStr = `${window.t('js.cal.day')} ${day} ${MONTH_NAMES[window._calMonth]}`;
-  const itemsHtml = dayTrades.map(t=>{
+  const titleStr = `${day} ${MONTH_NAMES[window._calMonth]}`;
+
+  const itemsHtml = dayTrades.map(t => {
     const sym = (t.symbol||'').toUpperCase();
     const oc  = (t.outcome||'').trim();
     const col = _pillColor(oc);
-    let timeStr='';
+    let timeStr = '';
     if(t.openTime){ const dt=new Date(t.openTime); timeStr=String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'); }
     const profitNum = typeof t.profit==='number' ? t.profit : parseFloat(t.profit);
-    const profitStr = (!isNaN(profitNum)) ? (profitNum>0?'+':'')+profitNum.toFixed(2) : '';
-    return `<div class="lcal-day-pill" style="background:${col.bg};border:1px solid ${col.border};color:${col.text}" onclick="event.stopPropagation();logOpenTradeEdit('${t.id}')">
-      <span style="overflow:hidden;text-overflow:ellipsis;flex:1">📄 ${sym}</span>
-      <span style="opacity:0.85;font-size:0.62rem">${timeStr}</span>
-      ${profitStr?`<span style="font-size:0.62rem">${profitStr}</span>`:''}
-      <span style="font-size:0.6rem;font-weight:800;border-left:1px solid ${col.border};padding-left:6px">${oc}</span>
+    const profitStr = !isNaN(profitNum) ? (profitNum>0?'+':'')+profitNum.toFixed(2) : '';
+    const profitColor = profitNum>0?'#4ade80':profitNum<0?'#f87171':'rgba(255,255,255,.6)';
+    return `<div onclick="event.stopPropagation();logCalCloseDayDetail();logOpenTradeView('${t.id}')"
+      style="display:flex;align-items:center;gap:8px;
+             background:${col.bg};border:1px solid ${col.border};border-radius:7px;
+             padding:0.55rem 0.75rem;cursor:pointer;transition:filter .12s;"
+      onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+      <span style="font-size:0.72rem;font-weight:800;color:${col.text};flex:1;letter-spacing:.3px;">${sym}</span>
+      <span style="font-size:0.6rem;color:${col.text};opacity:.75;">${timeStr}</span>
+      ${profitStr?`<span style="font-size:0.65rem;font-weight:700;color:${profitColor}">${profitStr}</span>`:''}
+      <span style="font-size:0.6rem;font-weight:800;color:${col.text};background:rgba(255,255,255,.15);padding:2px 7px;border-radius:4px;letter-spacing:.5px;">${oc||'—'}</span>
+      <span style="font-size:0.7rem;color:${col.text};opacity:.6;">›</span>
     </div>`;
-  }).join('') || `<div style="font-size:0.7rem;color:var(--faint);text-align:center;padding:0.5rem 0">${window.t('js.noorders')}</div>`;
-  detailEl.innerHTML = `<div class="lcal-day-detail-card">
-    <div class="lcal-day-detail-head">
-      <span class="lcal-day-detail-title">📌 ${titleStr} <span style="color:var(--faint);font-weight:500">(${dayTrades.length})</span></span>
-      <button class="lcal-day-detail-close" onclick="logCalCloseDayDetail()">✕</button>
+  }).join('');
+
+  detailEl.innerHTML = `<div class="lcal-day-detail-card" style="background:var(--surface);border:1.5px solid var(--border-dark);border-radius:10px;padding:0.75rem 0.85rem;margin-top:0.6rem;box-shadow:0 4px 18px rgba(0,0,0,.10);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+      <span style="font-size:0.75rem;font-weight:700;color:var(--ink);">📌 ${titleStr}
+        <span style="font-size:0.65rem;font-weight:500;color:var(--faint);margin-left:4px;">${dayTrades.length} lệnh — chọn để xem/sửa</span>
+      </span>
+      <button onclick="logCalCloseDayDetail()" style="background:none;border:none;color:var(--faint);font-size:1rem;cursor:pointer;padding:0 0.2rem;line-height:1;">✕</button>
     </div>
-    ${itemsHtml}
+    <div style="display:flex;flex-direction:column;gap:6px;">${itemsHtml}</div>
   </div>`;
 };
+
 window.logCalCloseDayDetail = function(){
   window._calSelectedDay = null;
   const detailEl = document.getElementById('lcal-day-detail');
