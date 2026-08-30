@@ -139,6 +139,49 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
 .log-sess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 .log-sess-item { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.7rem; text-align: center; }
 
+/* ── THỐNG KÊ THEO THÁNG (responsive: table trên desktop, card trên mobile) ── */
+.lmonth-table-wrap { overflow-x: auto; }
+.lmonth-cards { display: none; flex-direction: column; gap: 6px; }
+.lmonth-card { border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 0.7rem; background: var(--surface); cursor: pointer; transition: background .12s, border-color .12s; }
+.lmonth-card.sel { background: var(--blue-lt); border-color: var(--blue); }
+.lmonth-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; }
+.lmonth-card-name { font-size: 0.8rem; font-weight: 700; color: var(--ink); }
+.lmonth-card.sel .lmonth-card-name { color: var(--blue); }
+.lmonth-card-wr { font-size: 0.68rem; font-weight: 700; padding: 0.12rem 0.55rem; border-radius: 10px; background: var(--bg); color: var(--ink-2); flex-shrink: 0; }
+.lmonth-card-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; text-align: center; padding: 0.4rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.lmonth-card-stat-label { font-size: 0.48rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--faint); margin-bottom: 0.15rem; }
+.lmonth-card-stat-val { font-size: 0.74rem; font-weight: 700; color: var(--ink); }
+.lmonth-card-profit { margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--muted); }
+.lmonth-card-profit b { font-size: 0.78rem; }
+@media (max-width: 640px) {
+  .lmonth-table-wrap { display: none; }
+  .lmonth-cards { display: flex; }
+}
+
+/* ── CALENDAR · Lịch Vào Lệnh (responsive) ── */
+.lcal-pills-compact { display: none; }
+.lcal-day-detail { display: none; }
+.lcal-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 15px; height: 15px; border-radius: 3px; font-size: 0.5rem; font-weight: 800; padding: 0 3px; line-height: 1; }
+.lcal-dot.tp { background: #1b5e35; color: #d1fae5; }
+.lcal-dot.sl { background: #5c1a1a; color: #fee2e2; }
+.lcal-dot.be { background: #4a3200; color: #fef3c7; }
+.lcal-dot.op { background: #1e3a5f; color: #dbeafe; }
+.lcal-day-detail-card { border: 1.5px solid var(--border-dark); border-radius: 6px; padding: 0.65rem 0.75rem; margin-top: 0.6rem; background: var(--bg); }
+.lcal-day-detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.lcal-day-detail-title { font-size: 0.75rem; font-weight: 700; color: var(--ink); }
+.lcal-day-detail-close { background: none; border: none; color: var(--faint); font-size: 1rem; cursor: pointer; padding: 0 0.3rem; line-height: 1; }
+.lcal-day-pill { display: flex; align-items: center; justify-content: space-between; gap: 6px; border-radius: 5px; padding: 0.4rem 0.6rem; margin-bottom: 5px; font-size: 0.68rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.lcal-day-pill:last-child { margin-bottom: 0; }
+@media (max-width: 640px) {
+  #lcal-dow-header > div { font-size: 0.46rem !important; letter-spacing: 0.5px !important; }
+  #lcal-grid { gap: 2px !important; }
+  #lcal-grid > div { min-height: 46px !important; padding: 3px 3px !important; }
+  #lcal-grid .lcal-daynum { font-size: 0.58rem !important; margin-bottom: 2px !important; }
+  .lcal-pills-full { display: none; }
+  .lcal-pills-compact { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
+  .lcal-day-detail { display: block; }
+}
+
 /* ── MOBILE RESPONSIVE ── */
 @media (max-width: 640px) {
   .topnav { padding: 0 1rem; }
@@ -332,6 +375,12 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
 
     <!-- Stats -->
     <div id="log-page-stats" class="log-page-sec">
+      <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.7rem;">
+        <span style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;" data-i18n="js.stats.filterby">Xem theo</span>
+        <select id="lstats-month-select" onchange="logStatsSetMonth(this.value)" style="font-size:0.75rem;padding:0.3rem 0.6rem;border:1px solid var(--border-dark);border-radius:5px;background:var(--surface);color:var(--ink);font-family:inherit;cursor:pointer;font-weight:600;">
+          <option value="" data-i18n="js.stats.allmonths">Tất cả các tháng</option>
+        </select>
+      </div>
       <div class="log-kpi-grid" id="lkpi-grid"></div>
       <!-- Hàng 1: Win Rate -->
       <div class="log-charts-2" style="margin-top:0.8rem">
@@ -344,6 +393,14 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
           <div class="log-sess-grid" id="lsess-grid"></div>
         </div>
       </div>
+      <!-- Hàng 1.7: Thống kê theo tháng — full width -->
+      <div style="margin-top:0.8rem;">
+        <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
+          <div class="log-card-label" data-i18n="js.card.month">📅 Thống Kê Theo Tháng</div>
+          <div id="lmonth-stats" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+
       <!-- Hàng 2: Symbol RR theo từng Case — full width -->
       <div style="margin-top:0.8rem;">
         <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
@@ -424,6 +481,8 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
           </div>
           <!-- Calendar grid -->
           <div id="lcal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+          <!-- Day detail panel (hiện trên mobile khi bấm vào 1 ngày có lệnh) -->
+          <div id="lcal-day-detail" class="lcal-day-detail"></div>
           <!-- Legend -->
           <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem;flex-wrap:wrap;">
             <span style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--faint);font-weight:600;">Chú thích:</span>
@@ -838,6 +897,17 @@ const LOG_CL_ITEMS = [
 ];
 
 let logTrades = [];
+let logStatsMonth = ''; // '' = tất cả các tháng; 'YYYY-MM' = lọc theo tháng cụ thể trên trang Thống Kê
+function logStatsSetMonth(v){
+  logStatsMonth = v || '';
+  if(typeof logRenderStats === 'function') logRenderStats();
+}
+window.logStatsSetMonth = logStatsSetMonth;
+// Bấm vào 1 dòng tháng: nếu đang chọn tháng đó rồi thì bỏ chọn (về "Tất cả"), ngược lại thì chọn tháng đó
+function logStatsToggleMonth(k){
+  logStatsSetMonth(logStatsMonth===k ? '' : k);
+}
+window.logStatsToggleMonth = logStatsToggleMonth;
 let logWl = {};
 let logAlerts = {};
 let logLimits = {d:2,w:5,m:10};
@@ -2101,9 +2171,31 @@ function logDestroyChart(k){if(logCharts[k]){logCharts[k].destroy();delete logCh
 function logRenderStats(){
   const kpiGrid=document.getElementById('lkpi-grid');
   if(!logTrades.length){if(kpiGrid)kpiGrid.innerHTML='<div style="color:var(--muted);padding:1rem">📊 '+window.t('js.noorders')+'</div>';return;}
+
+  // ── Khoá tháng YYYY-MM từ 1 lệnh ──
+  const _monthKey=t=>{
+    if(!t.openTime) return null;
+    const d=new Date(t.openTime);
+    if(isNaN(d)) return null;
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  };
+
+  // ── Populate dropdown chọn tháng (dựa trên toàn bộ lệnh) ──
+  const monthSelectEl=document.getElementById('lstats-month-select');
+  if(monthSelectEl){
+    const monthsAvail=[...new Set(logTrades.map(_monthKey).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+    if(logStatsMonth && !monthsAvail.includes(logStatsMonth)) logStatsMonth='';
+    monthSelectEl.innerHTML=`<option value="">${window.t('js.stats.allmonths')}</option>`+
+      monthsAvail.map(k=>{const [y,mm]=k.split('-');return `<option value="${k}"${k===logStatsMonth?' selected':''}>${mm}/${y}</option>`;}).join('');
+    monthSelectEl.value=logStatsMonth;
+  }
+
+  // ── Bộ lệnh dùng cho các mục chi tiết: lọc theo tháng đang chọn (nếu có) ──
+  const logTradesF = logStatsMonth ? logTrades.filter(t=>_monthKey(t)===logStatsMonth) : logTrades;
+
   // Chỉ tính lệnh thuộc 4 case (loại case "other")
   const _normCase=t=>LOG_CASES_LEGACY[t.caseType]||t.caseType;
-  const caseTrades = logTrades.filter(t=>LOG_CASES.includes(_normCase(t)));
+  const caseTrades = logTradesF.filter(t=>LOG_CASES.includes(_normCase(t)));
   // Phân loại theo outcome trước, fallback sang profit nếu không có outcome
   const tpTrades  = caseTrades.filter(t=>t.outcome==='TP');
   const slTrades  = caseTrades.filter(t=>t.outcome==='SL');
@@ -2134,8 +2226,89 @@ function logRenderStats(){
     </div>`).join('');
   }
 
+  // Thống kê theo tháng — LUÔN dùng toàn bộ dữ liệu (không bị ảnh hưởng bởi filter tháng),
+  // để làm bảng tổng quan cho phép bấm chọn nhanh 1 tháng.
+  const monthEl=document.getElementById('lmonth-stats');
+  if(monthEl){
+    const caseTradesAll = logTrades.filter(t=>LOG_CASES.includes(_normCase(t)));
+    const byMonth={};
+    caseTradesAll.forEach(t=>{
+      const key=_monthKey(t);
+      if(!key) return;
+      if(!byMonth[key]) byMonth[key]={tp:0,sl:0,be:0,open:0,total:0,profit:0};
+      const m=byMonth[key];
+      m.total++;
+      m.profit+=(t.profit||0);
+      if(t.outcome==='TP') m.tp++;
+      else if(t.outcome==='SL') m.sl++;
+      else if(t.outcome==='BE') m.be++;
+      else if(t.outcome==='Open') m.open++;
+    });
+    const monthKeys=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a)); // mới nhất trước
+    if(!monthKeys.length){
+      monthEl.innerHTML='<div style="color:var(--muted);padding:1rem;font-size:0.78rem">📊 '+window.t('js.noorders')+'</div>';
+    } else {
+      const rowsData=monthKeys.map(k=>{
+        const m=byMonth[k];
+        const closedN2=m.tp+m.sl;
+        const wr2=closedN2?+(m.tp/closedN2*100).toFixed(1):0;
+        const [y,mm]=k.split('-');
+        const isSel=k===logStatsMonth;
+        return {k,m,closedN2,wr2,mm,y,isSel};
+      });
+      const wrCardCol=p=>p>=60?'#16a34a':p>=40?'#d97706':'#dc2626';
+      // ── Table (desktop) ──
+      const tableHtml=`<div class="lmonth-table-wrap"><table style="min-width:640px">
+        <thead><tr>
+          <th>${window.t('js.month.label')}</th>
+          <th>${window.t('js.kpi.total')}</th>
+          <th>${window.t('js.kpi.tp')}</th>
+          <th>${window.t('js.kpi.sl')}</th>
+          <th>${window.t('js.kpi.be')}</th>
+          <th>${window.t('js.kpi.open')}</th>
+          <th>${window.t('js.kpi.winrate')}</th>
+          <th>${window.t('js.month.profit')}</th>
+        </tr></thead>
+        <tbody>
+        ${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
+          const profitColor=m.profit>0?'var(--green)':m.profit<0?'var(--red)':'var(--ink-2)';
+          return `<tr onclick="logStatsToggleMonth('${k}')" style="cursor:pointer;${isSel?'background:var(--blue-lt)':''}">
+            <td style="font-weight:700;white-space:nowrap;${isSel?'color:var(--blue)':''}">${mm}/${y}${isSel?' ✓':''}</td>
+            <td>${m.total}</td>
+            <td>${m.tp}</td>
+            <td>${m.sl}</td>
+            <td>${m.be}</td>
+            <td>${m.open}</td>
+            <td>${closedN2?wr2+'%':'—'}</td>
+            <td style="font-weight:700;color:${profitColor};white-space:nowrap">${m.profit>0?'+':''}${m.profit.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>`;
+      // ── Cards (mobile) — gọn trong 1 màn hình, không cần scroll ngang ──
+      const cardsHtml=`<div class="lmonth-cards">${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
+        const profitColor=m.profit>0?'var(--green)':m.profit<0?'var(--red)':'var(--ink-2)';
+        return `<div class="lmonth-card${isSel?' sel':''}" onclick="logStatsToggleMonth('${k}')">
+          <div class="lmonth-card-top">
+            <span class="lmonth-card-name">${mm}/${y}${isSel?' ✓':''}</span>
+            <span class="lmonth-card-wr" style="color:${closedN2?wrCardCol(wr2):'var(--faint)'}">${closedN2?wr2+'%':'—'} WR</span>
+          </div>
+          <div class="lmonth-card-stats">
+            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.total')}</div><div class="lmonth-card-stat-val">${m.total}</div></div>
+            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.tp')}</div><div class="lmonth-card-stat-val" style="color:#16a34a">${m.tp}</div></div>
+            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.sl')}</div><div class="lmonth-card-stat-val" style="color:#dc2626">${m.sl}</div></div>
+            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.be')}</div><div class="lmonth-card-stat-val">${m.be}</div></div>
+            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.open')}</div><div class="lmonth-card-stat-val">${m.open}</div></div>
+          </div>
+          <div class="lmonth-card-profit"><span>${window.t('js.month.profit')}</span><b style="color:${profitColor}">${m.profit>0?'+':''}${m.profit.toFixed(2)}</b></div>
+        </div>`;
+      }).join('')}</div>`;
+      monthEl.innerHTML=`<div style="font-size:0.65rem;color:var(--faint);margin-bottom:0.4rem" data-i18n="js.month.hint">${window.t('js.month.hint')}</div>${tableHtml}${cardsHtml}`;
+    }
+  }
+
   // Equity curve
-  const sorted=logTrades.slice().sort((a,b)=>new Date(a.openTime)-new Date(b.openTime));
+  const sorted=logTradesF.slice().sort((a,b)=>new Date(a.openTime)-new Date(b.openTime));
   const eqData=sorted.reduce((arr,t,i)=>{const prev=arr[i-1]||0;return[...arr,+(prev+t.profit).toFixed(2)];},[]);
   logDestroyChart('equity');
   const ctx1=document.getElementById('lchart-equity')?.getContext('2d');
@@ -2147,7 +2320,7 @@ function logRenderStats(){
 
   // Symbol profit
   const bySym={};
-  logTrades.forEach(t=>{if(!bySym[t.symbol])bySym[t.symbol]=0;bySym[t.symbol]+=t.profit;});
+  logTradesF.forEach(t=>{if(!bySym[t.symbol])bySym[t.symbol]=0;bySym[t.symbol]+=t.profit;});
   const symE=Object.entries(bySym).map(([s,p])=>({s,p:+p.toFixed(2)})).sort((a,b)=>b.p-a.p).slice(0,8);
   logDestroyChart('sym');
   const ctx2=document.getElementById('lchart-sym')?.getContext('2d');
@@ -2156,7 +2329,7 @@ function logRenderStats(){
   // Case stats
   const caseEl=document.getElementById('lcase-stats');
   if(caseEl) caseEl.innerHTML=LOG_CASES.map(c=>{
-    const t=logTrades.filter(x=>(LOG_CASES_LEGACY[x.caseType]||x.caseType)===c);
+    const t=logTradesF.filter(x=>(LOG_CASES_LEGACY[x.caseType]||x.caseType)===c);
     const closed=t.filter(x=>x.outcome==='TP'||x.outcome==='SL'); // BE không tính vào win rate
     const w=t.filter(x=>x.outcome==='TP');
     const wr2=closed.length?+(w.length/closed.length*100).toFixed(0):0;
@@ -2186,7 +2359,7 @@ function logRenderStats(){
   const emoEl=document.getElementById('lemo-stats');
   if(emoEl){
     const emoData=LOG_EMOTIONS.map(em=>{
-      const trades_em=logTrades.filter(x=>x.emotion===em);
+      const trades_em=logTradesF.filter(x=>x.emotion===em);
       const closed2=trades_em.filter(x=>x.outcome==='TP'||x.outcome==='SL');
       const w2=trades_em.filter(x=>x.outcome==='TP');
       return{name:em,wr:closed2.length?+(w2.length/closed2.length*100).toFixed(0):0,n:trades_em.length};
@@ -2247,7 +2420,7 @@ function logRenderStats(){
   // Per-case-session win rate: symCaseSessWR[sym][caseShort][session] = {w, total}
   const symCaseSessWR={};
 
-  logTrades.forEach(t=>{
+  logTradesF.forEach(t=>{
     const sym=t.symbol; if(!sym) return;
     const ci=CASES_FULL.indexOf(LOG_CASES_LEGACY[t.caseType]||t.caseType); if(ci<0) return;
     const cs=CASES_SHORT[ci];
@@ -2359,7 +2532,7 @@ function logRenderStats(){
     return html;
   };
   // ── RR Table render helper (supports mobile case filter) ──────────
-  const allSyms=[...new Set(logTrades.filter(t=>t.symbol).map(t=>t.symbol))].sort();
+  const allSyms=[...new Set(logTradesF.filter(t=>t.symbol).map(t=>t.symbol))].sort();
   window._rrTableData={allSyms,symCaseRR,symCaseWR,symSessWR,symCaseSessWR,CASES_SHORT,CASES_LABEL,CASE_COLORS,wrCol};
 
   function _buildRRTable(caseIdxFilter){
@@ -2489,9 +2662,11 @@ function logRenderStats(){
 window._calYear = new Date().getFullYear();
 window._calMonth = new Date().getMonth();
 window._calFilters = { case:'', entryTF:'', outcome:'' };
+window._calSelectedDay = null; // ngày đang mở chi tiết (dùng cho mobile)
 
 window.logCalFilter = function(btn, type, val) {
   window._calFilters[type] = val;
+  window._calSelectedDay = null;
   // Bỏ active tất cả button cùng nhóm
   document.querySelectorAll(`button[data-lcal="${type}"]`).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2502,6 +2677,7 @@ window.logCalNav = function(dir) {
   window._calMonth += dir;
   if(window._calMonth > 11) { window._calMonth = 0; window._calYear++; }
   if(window._calMonth < 0)  { window._calMonth = 11; window._calYear--; }
+  window._calSelectedDay = null;
   window.logRenderCalendar();
 };
 
@@ -2571,7 +2747,7 @@ window.logRenderCalendar = function() {
         else bgColor = 'rgba(44,74,124,0.08)';
       }
 
-      // Build event pills
+      // Build event pills (desktop — đầy đủ)
       const _pillColor = (oc) => {
         const s = (oc||'').trim();
         if(s === 'TP')   return { bg:'#1b5e35', border:'#22c55e', text:'#d1fae5' };
@@ -2580,6 +2756,7 @@ window.logRenderCalendar = function() {
         if(s === 'Open') return { bg:'#1e3a5f', border:'#60a5fa', text:'#dbeafe' };
         return              { bg:'#2d2d2d', border:'#6b7280', text:'#e5e7eb' };
       };
+      window._calPillColor = _pillColor; // dùng lại cho panel chi tiết mobile
 
       let pills = '';
       dayTrades.forEach(t => {
@@ -2606,15 +2783,78 @@ window.logRenderCalendar = function() {
         </div>`;
       });
 
-      html += `<div style="min-height:80px;border-radius:4px;border:1.5px solid ${borderColor};background:${bgColor};padding:5px 6px;cursor:${total>0?'pointer':'default'};transition:box-shadow .12s,border-color .12s;position:relative;"
+      // Build compact dots (mobile — gọn, bấm vào ô để xem chi tiết)
+      let dots = '';
+      if(tp) dots += `<span class="lcal-dot tp">${tp}</span>`;
+      if(sl) dots += `<span class="lcal-dot sl">${sl}</span>`;
+      if(be) dots += `<span class="lcal-dot be">${be}</span>`;
+      if(op) dots += `<span class="lcal-dot op">${op}</span>`;
+
+      const isSelDay = window._calSelectedDay === day;
+      html += `<div data-day="${day}" onclick="${total>0?`logCalShowDayDetail(${day})`:''}" style="min-height:80px;border-radius:4px;border:1.5px solid ${isSelDay?'var(--blue)':borderColor};background:${isSelDay?'var(--blue-lt)':bgColor};padding:5px 6px;cursor:${total>0?'pointer':'default'};transition:box-shadow .12s,border-color .12s;position:relative;"
         onmouseover="if(${total}>0){this.style.boxShadow='0 2px 10px rgba(0,0,0,.10)';this.style.borderColor='var(--ink-2)';}"
-        onmouseout="this.style.boxShadow='';this.style.borderColor='${borderColor}';">
-        <div style="font-size:0.65rem;font-weight:${isToday?'800':'600'};color:${isToday?'var(--ink)':'var(--ink-2)'};margin-bottom:4px;text-align:right;">${day}</div>
-        ${pills}
+        onmouseout="this.style.boxShadow='';this.style.borderColor='${isSelDay?'var(--blue)':borderColor}';">
+        <div class="lcal-daynum" style="font-size:0.65rem;font-weight:${isToday?'800':'600'};color:${isToday?'var(--ink)':'var(--ink-2)'};margin-bottom:4px;text-align:right;">${day}</div>
+        <div class="lcal-pills-full">${pills}</div>
+        <div class="lcal-pills-compact">${dots}</div>
       </div>`;
     }
 
     grid.innerHTML = html;
+    window._calByDay = byDay; // lưu lại để panel chi tiết (mobile) dùng
+
+    // Cập nhật/đóng panel chi tiết ngày
+    if(window._calSelectedDay != null && byDay[window._calSelectedDay] && byDay[window._calSelectedDay].length){
+      window.logCalShowDayDetail(window._calSelectedDay, true);
+    } else {
+      window._calSelectedDay = null;
+      const detailEl = document.getElementById('lcal-day-detail');
+      if(detailEl) detailEl.innerHTML = '';
+    }
+};
+
+// ── CALENDAR · Panel chi tiết ngày (chủ yếu dùng cho mobile) ──
+window.logCalShowDayDetail = function(day, keepSelection){
+  const detailEl = document.getElementById('lcal-day-detail');
+  if(!detailEl) return;
+  if(!keepSelection){
+    // Bấm lại đúng ngày đang mở → đóng panel; ngược lại → chọn ngày mới
+    window._calSelectedDay = (window._calSelectedDay === day) ? null : day;
+    window.logRenderCalendar(); // render lại cả lưới (để tô sáng ô đang chọn) + panel chi tiết
+    return;
+  }
+  const dayTrades = (window._calByDay && window._calByDay[day]) || [];
+  const _pillColor = window._calPillColor || (()=>({bg:'#2d2d2d',border:'#6b7280',text:'#e5e7eb'}));
+  const MONTH_NAMES = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+                       'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const titleStr = `${window.t('js.cal.day')} ${day} ${MONTH_NAMES[window._calMonth]}`;
+  const itemsHtml = dayTrades.map(t=>{
+    const sym = (t.symbol||'').toUpperCase();
+    const oc  = (t.outcome||'').trim();
+    const col = _pillColor(oc);
+    let timeStr='';
+    if(t.openTime){ const dt=new Date(t.openTime); timeStr=String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'); }
+    const profitStr = (t.profit!=null) ? (t.profit>0?'+':'')+(+t.profit).toFixed(2) : '';
+    return `<div class="lcal-day-pill" style="background:${col.bg};border:1px solid ${col.border};color:${col.text}" onclick="event.stopPropagation();logOpenTradeEdit('${t.id}')">
+      <span style="overflow:hidden;text-overflow:ellipsis;flex:1">📄 ${sym}</span>
+      <span style="opacity:0.85;font-size:0.62rem">${timeStr}</span>
+      ${profitStr?`<span style="font-size:0.62rem">${profitStr}</span>`:''}
+      <span style="font-size:0.6rem;font-weight:800;border-left:1px solid ${col.border};padding-left:6px">${oc}</span>
+    </div>`;
+  }).join('') || `<div style="font-size:0.7rem;color:var(--faint);text-align:center;padding:0.5rem 0">${window.t('js.noorders')}</div>`;
+  detailEl.innerHTML = `<div class="lcal-day-detail-card">
+    <div class="lcal-day-detail-head">
+      <span class="lcal-day-detail-title">📌 ${titleStr} <span style="color:var(--faint);font-weight:500">(${dayTrades.length})</span></span>
+      <button class="lcal-day-detail-close" onclick="logCalCloseDayDetail()">✕</button>
+    </div>
+    ${itemsHtml}
+  </div>`;
+};
+window.logCalCloseDayDetail = function(){
+  window._calSelectedDay = null;
+  const detailEl = document.getElementById('lcal-day-detail');
+  if(detailEl) detailEl.innerHTML = '';
+  window.logRenderCalendar();
 };
 
 // ── LOG POSITION CALC ─────────────────────────────
@@ -2829,6 +3069,13 @@ document.addEventListener('click', e => {
       'js.card.emotion.winrate':'🧠 Emotion · Win Rate',
       'js.card.rr':             'Symbol · Avg RR theo Case',
       'js.card.rr.sub':         '(tự động tính & thực tế MAX)',
+      'js.card.month':          '📅 Thống Kê Theo Tháng',
+      'js.month.label':         'Tháng',
+      'js.month.profit':        'Lợi Nhuận',
+      'js.month.hint':          '👆 Bấm vào 1 tháng để xem chi tiết',
+      'js.stats.filterby':      'Xem theo',
+      'js.stats.allmonths':     'Tất cả các tháng',
+      'js.cal.day':             'Ngày',
       'js.emo.calm':            'Bình tĩnh',
       'js.emo.fomo':            'FOMO',
       'js.emo.hesitate':        'Do dự',
@@ -3039,6 +3286,13 @@ document.addEventListener('click', e => {
       'js.card.emotion.winrate':'🧠 感情 · 勝率',
       'js.card.rr':             'シンボル · ケース別平均RR',
       'js.card.rr.sub':         '（自動計算 & 実際のMAX）',
+      'js.card.month':          '📅 月別統計',
+      'js.month.label':         '月',
+      'js.month.profit':        '損益',
+      'js.month.hint':          '👆 月をタップすると詳細が見れます',
+      'js.stats.filterby':      '表示',
+      'js.stats.allmonths':     'すべての月',
+      'js.cal.day':             '日',
       'js.emo.calm':            '冷静',
       'js.emo.fomo':            'FOMO',
       'js.emo.hesitate':        '躊躇',
