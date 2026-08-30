@@ -2834,7 +2834,8 @@ window.logCalShowDayDetail = function(day, keepSelection){
     const col = _pillColor(oc);
     let timeStr='';
     if(t.openTime){ const dt=new Date(t.openTime); timeStr=String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'); }
-    const profitStr = (t.profit!=null) ? (t.profit>0?'+':'')+(+t.profit).toFixed(2) : '';
+    const profitNum = typeof t.profit==='number' ? t.profit : parseFloat(t.profit);
+    const profitStr = (!isNaN(profitNum)) ? (profitNum>0?'+':'')+profitNum.toFixed(2) : '';
     return `<div class="lcal-day-pill" style="background:${col.bg};border:1px solid ${col.border};color:${col.text}" onclick="event.stopPropagation();logOpenTradeEdit('${t.id}')">
       <span style="overflow:hidden;text-overflow:ellipsis;flex:1">📄 ${sym}</span>
       <span style="opacity:0.85;font-size:0.62rem">${timeStr}</span>
