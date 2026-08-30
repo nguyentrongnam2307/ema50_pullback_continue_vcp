@@ -382,63 +382,95 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
         </select>
       </div>
       <div class="log-kpi-grid" id="lkpi-grid"></div>
-      <!-- Hàng 1: Win Rate -->
-      <div class="log-charts-2" style="margin-top:0.8rem">
-        <div class="log-card">
-          <div class="log-card-label" data-i18n="js.card.case.winrate">📋 Case · Win Rate</div>
-          <div id="lcase-stats"></div>
-        </div>
-        <div class="log-card">
-          <div class="log-card-label" data-i18n="js.card.session.winrate">🕐 Session · Win Rate</div>
-          <div class="log-sess-grid" id="lsess-grid"></div>
-        </div>
-      </div>
-      <!-- Hàng 1.7: Thống kê theo tháng — full width -->
-      <div style="margin-top:0.8rem;">
-        <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
-          <div class="log-card-label" data-i18n="js.card.month">📅 Thống Kê Theo Tháng</div>
-          <div id="lmonth-stats" style="overflow-x:auto;"></div>
-        </div>
-      </div>
 
-
-      <!-- Hàng 1.8: Thống kê cặp tiền — full width -->
-      <div style="margin-top:0.8rem;">
-        <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
-          <div class="log-card-label" id="lsym-stats-label">📊 Cặp Tiền · TP / SL / BE</div>
-          <div id="lsym-stats-body"></div>
+      <!-- ══ BLOCK 1: TỔNG QUAN ══ -->
+      <div style="margin-top:1rem;background:#f7f5f2;border:1px solid #e0ddd8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+        <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#a09d98;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:12px;height:2px;background:#a09d98;border-radius:1px;"></span>
+          Tổng Quan
+          <span style="display:inline-block;flex:1;height:1px;background:#e0ddd8;"></span>
         </div>
-      </div>
 
-      <!-- Hàng 2: Symbol RR theo từng Case — full width -->
-      <div style="margin-top:0.8rem;">
-        <div class="log-card" style="grid-column:1/-1;border:3px solid var(--border);overflow:hidden">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-            <div class="log-card-label" style="margin-bottom:0"><span data-i18n="js.card.rr">Symbol · Avg RR theo Case</span> <span style="font-size:0.6rem;font-weight:400;color:var(--faint);text-transform:none;letter-spacing:0" data-i18n="js.card.rr.sub">(tự động tính &amp; thực tế MAX)</span></div>
-            <!-- Mobile case selector -->
-            <select id="lrr-case-select" onchange="logRenderRRTableMobile(this.value)" style="display:none;font-size:0.72rem;padding:0.25rem 0.5rem;border:1px solid var(--border-dark);border-radius:4px;background:var(--surface);color:var(--ink);font-family:inherit;cursor:pointer">
-              <option value="all">Tất cả Case</option>
-              <option value="0">H1 Pullback</option>
-              <option value="1">H1 Continuation</option>
-              <option value="2">VCP</option>
-              <option value="3">Other</option>
-            </select>
+        <!-- Thống kê theo tháng — full width -->
+        <div style="margin-bottom:0.8rem;">
+          <div class="log-card" style="border:1px solid #e0ddd8;overflow:hidden">
+            <div class="log-card-label" data-i18n="js.card.month">📅 Thống Kê Theo Tháng</div>
+            <div id="lmonth-stats" style="overflow-x:auto;"></div>
           </div>
-          <div id="lrr-sym-case-table" style="margin-top:0.6rem;"></div>
-          <div id="lrr-sym-case-bars" style="display:none"></div>
         </div>
-      </div>
-      <!-- Hàng 4: Emotion full width -->
-      <div class="log-charts-2" style="margin-top:0.8rem">
-        <div class="log-card" style="grid-column:1/-1">
-          <div class="log-card-label" data-i18n="js.card.emotion.winrate">🧠 Emotion · Win Rate</div>
-          <div id="lemo-stats"></div>
+
+        <!-- Cặp tiền — full width -->
+        <div style="margin-bottom:0.8rem;">
+          <div class="log-card" style="border:1px solid #e0ddd8;overflow:hidden">
+            <div class="log-card-label" id="lsym-stats-label">📊 Cặp Tiền · TP / SL / BE</div>
+            <div id="lsym-stats-body"></div>
+          </div>
+        </div>
+
+        <!-- Case WR | Session WR (filter theo tháng) -->
+        <div class="log-charts-2" style="margin-bottom:0.8rem">
+          <div class="log-card" style="border:1px solid #e0ddd8;">
+            <div class="log-card-label" data-i18n="js.card.case.winrate">📋 Case · Win Rate</div>
+            <div id="lcase-stats"></div>
+          </div>
+          <div class="log-card" style="border:1px solid #e0ddd8;">
+            <div class="log-card-label" data-i18n="js.card.session.winrate">🕐 Session · Win Rate</div>
+            <div class="log-sess-grid" id="lsess-grid"></div>
+          </div>
+        </div>
+
+        <!-- Emotion | Giờ Vào Lệnh -->
+        <div class="log-charts-2" style="margin-bottom:0.8rem">
+          <div class="log-card" style="border:1px solid #e0ddd8;">
+            <div class="log-card-label" data-i18n="js.card.emotion.winrate">🧠 Emotion · Win Rate</div>
+            <div id="lemo-stats"></div>
+          </div>
+          <div class="log-card" style="border:1px solid #e0ddd8;">
+            <div class="log-card-label">🕐 Giờ Vào Lệnh · Win Rate theo Giờ</div>
+            <div id="lhour-stats"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Hàng 5: Calendar full width -->
-      <div style="margin-top:0.8rem;">
-        <div class="log-card" style="border:3px solid var(--border);overflow:hidden;">
+      <!-- ══ BLOCK 2: PHÂN TÍCH ALL-TIME ══ -->
+      <div style="margin-top:0.8rem;background:#f0ede8;border:1px solid #c8c4bc;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+        <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#8a8680;font-weight:700;margin-bottom:0.4rem;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:12px;height:2px;background:#8a8680;border-radius:1px;"></span>
+          Phân Tích All-Time
+          <span style="display:inline-block;flex:1;height:1px;background:#c8c4bc;"></span>
+        </div>
+        <div style="font-size:0.62rem;color:#8a8680;margin-bottom:0.75rem;font-style:italic;">Không phụ thuộc bộ lọc tháng — tổng hợp toàn bộ lệnh</div>
+
+        <!-- Streak | BUY/SELL -->
+        <div class="log-charts-2" style="margin-bottom:0.8rem">
+          <div class="log-card" style="border:1px solid #c8c4bc;">
+            <div class="log-card-label">🔥 Streak · Chuỗi Thắng / Thua</div>
+            <div id="lstreak-stats"></div>
+          </div>
+          <div class="log-card" style="border:1px solid #c8c4bc;">
+            <div class="log-card-label">↕️ BUY vs SELL · Win Rate</div>
+            <div id="lbuysell-stats"></div>
+          </div>
+        </div>
+
+        <!-- Avg RR — full width, all-time -->
+        <div style="margin-bottom:0.8rem;">
+          <div class="log-card" style="border:1px solid #c8c4bc;overflow:hidden">
+            <div class="log-card-label">⚖️ Avg RR · Plan vs Thực Tế <span style="font-size:0.55rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--faint)">(theo Case · lệnh TP · toàn bộ)</span></div>
+            <div id="lavgrr-stats"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BLOCK 3: CALENDAR ══ -->
+      <div style="margin-top:0.8rem;background:#ffffff;border:1px solid #dbe4f0;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+        <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#7a90b0;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:12px;height:2px;background:#7a90b0;border-radius:1px;"></span>
+          Calendar
+          <span style="display:inline-block;flex:1;height:1px;background:#dbe4f0;"></span>
+        </div>
+        <div style="margin-bottom:0.8rem;">
+        <div class="log-card" style="border:1px solid #dbe4f0;overflow:hidden;">
           <div style="margin-bottom:0.8rem;">
             <div class="log-card-label" style="margin-bottom:0.6rem;">📅 Calendar · Lịch Vào Lệnh</div>
             <!-- Filter rows giống History -->
@@ -502,7 +534,8 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
             <span style="display:flex;align-items:center;gap:4px;font-size:0.65rem;color:var(--ink-2);"><span style="width:10px;height:10px;border-radius:2px;background:var(--border-dark);display:inline-block;"></span>Không lệnh</span>
           </div>
         </div>
-      </div>
+        </div><!-- end calendar card wrapper -->
+      </div><!-- end calendar block -->
 
     </div>
 
@@ -641,8 +674,17 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
       </div>
 
       <div class="log-fg span2">
-        <label data-i18n="lf.rr.actual">RR thực tế <span style="font-size:0.62rem;color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(RR MAX có thể nhận được)</span></label>
-        <input type="number" id="lf-rr-actual" step="0.01" min="0" placeholder="VD: 2.5" style="background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+        <label data-i18n="lf.rr.actual">RR <span style="font-size:0.62rem;color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0"></span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Plan <span style="font-weight:400;text-transform:none;letter-spacing:0">(RR dự định)</span></div>
+            <input type="number" id="lf-rr-plan" step="0.01" min="0" placeholder="VD: 2.0" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+          </div>
+          <div>
+            <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Thực tế MAX <span style="font-weight:400;text-transform:none;letter-spacing:0">(giá đi được xa nhất)</span></div>
+            <input type="number" id="lf-rr-actual" step="0.01" min="0" placeholder="VD: 2.5" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+          </div>
+        </div>
         <div style="display:flex;gap:8px;margin-top:5px">
           <label style="display:flex;align-items:center;gap:4px;font-size:0.7rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink-2)">
             <input type="radio" name="lf-outcome" id="lf-outcome-sl" value="SL" style="accent-color:var(--red)"> Hit SL
@@ -1702,7 +1744,9 @@ function logOpenTradeModal(trade,sym){
   g('lf-entry-tf').value=trade?.entryTF||'';
   g('lf-session').value=trade?.session||'London';
   g('lf-emotion').value=trade?.emotion||'Bình tĩnh';
-  // RR thực tế
+  // RR Plan & thực tế
+  const rrPlanEl=document.getElementById('lf-rr-plan');
+  if(rrPlanEl) rrPlanEl.value=trade?.rrPlan!=null?trade.rrPlan:'';
   const rrActualEl=document.getElementById('lf-rr-actual');
   if(rrActualEl) rrActualEl.value=trade?.rrActual!=null?trade.rrActual:'';
   g('lf-profit').value=trade?.profit!=null?trade.profit:'';
@@ -1815,6 +1859,7 @@ window.logSaveTrade = async ()=>{
     openTime:val('lf-time'),
     closeTime:val('lf-close-time')||'',
     note:val('lf-note'),
+    rrPlan:(()=>{const v=parseFloat(document.getElementById('lf-rr-plan')?.value);return isNaN(v)||v<=0?null:v;})(),
     rrActual:(()=>{const v=parseFloat(document.getElementById('lf-rr-actual')?.value);return isNaN(v)||v<=0?null:v;})(),
 
     clChecks:Object.fromEntries((window.LOG_CL_ITEMS||[]).map(([k])=>[k,!!document.getElementById('lf-cl-'+k)?.checked])),
@@ -2786,6 +2831,288 @@ function logRenderStats(){
       tblEl.innerHTML=_buildRRTable(defaultIdx);
     }
   }
+
+  // ── 1. STREAK ──────────────────────────────────────────────────────────────
+  (function renderStreak() {
+    const el = document.getElementById('lstreak-stats');
+    if (!el) return;
+    // Dùng toàn bộ logTrades sắp xếp theo thời gian (streak không filter tháng)
+    const sorted = logTrades
+      .filter(t => t.outcome === 'TP' || t.outcome === 'SL')
+      .sort((a,b) => new Date(a.openTime) - new Date(b.openTime));
+    if (!sorted.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.78rem">Chưa có dữ liệu</div>'; return; }
+
+    // Tính chuỗi hiện tại + max
+    let curStreak = 1, curType = sorted[sorted.length-1].outcome;
+    let maxWin = 0, maxLose = 0;
+    let tmpW = 0, tmpL = 0;
+    sorted.forEach((t,i) => {
+      const win = t.outcome === 'TP';
+      if (win) { tmpW++; tmpL=0; } else { tmpL++; tmpW=0; }
+      if (tmpW > maxWin) maxWin = tmpW;
+      if (tmpL > maxLose) maxLose = tmpL;
+    });
+    // Chuỗi hiện tại (từ cuối)
+    curStreak = 1;
+    for (let i = sorted.length - 2; i >= 0; i--) {
+      if (sorted[i].outcome === curType) curStreak++;
+      else break;
+    }
+    const isWin = curType === 'TP';
+    const curColor = isWin ? '#2563eb' : '#ea580c';
+    const curBg = isWin ? '#dbeafe' : '#fff7ed';
+    const curLabel = isWin ? '🔥 Đang thắng' : '❄️ Đang thua';
+
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:${curBg};border:1.5px solid ${curColor};border-radius:6px;padding:0.6rem;text-align:center">
+          <div style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;color:${curColor};font-weight:600;margin-bottom:3px">${curLabel}</div>
+          <div style="font-size:1.6rem;font-weight:700;color:${curColor};line-height:1">${curStreak}</div>
+          <div style="font-size:0.58rem;color:${curColor};margin-top:2px">lệnh liên tiếp</div>
+        </div>
+        <div style="background:var(--green-lt);border:1.5px solid #16a34a;border-radius:6px;padding:0.6rem;text-align:center">
+          <div style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;color:#16a34a;font-weight:600;margin-bottom:3px">Max thắng</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#16a34a;line-height:1">${maxWin}</div>
+          <div style="font-size:0.58rem;color:#16a34a;margin-top:2px">lệnh liên tiếp</div>
+        </div>
+        <div style="background:var(--red-lt);border:1.5px solid #dc2626;border-radius:6px;padding:0.6rem;text-align:center">
+          <div style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;color:#dc2626;font-weight:600;margin-bottom:3px">Max thua</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#dc2626;line-height:1">${maxLose}</div>
+          <div style="font-size:0.58rem;color:#dc2626;margin-top:2px">lệnh liên tiếp</div>
+        </div>
+      </div>
+      <div style="font-size:0.62rem;color:var(--muted);margin-top:2px">
+        ${isWin
+          ? (curStreak >= 3 ? '⚠️ Chuỗi thắng dài — giữ discipline, không tăng size đột ngột.' : 'Đang trong chuỗi thắng.')
+          : (curStreak >= 3 ? '🛑 Chuỗi thua ' + curStreak + ' lệnh — cân nhắc nghỉ ngơi hoặc review lại setup.' : 'Đang trong chuỗi thua.')
+        }
+      </div>`;
+  })();
+
+  // ── 2. BUY vs SELL ─────────────────────────────────────────────────────────
+  (function renderBuySell() {
+    const el = document.getElementById('lbuysell-stats');
+    if (!el) return;
+    const calc = type => {
+      const ts = logTrades.filter(t => t.type === type && (t.outcome==='TP'||t.outcome==='SL'));
+      const tp = ts.filter(t => t.outcome==='TP').length;
+      const sl = ts.filter(t => t.outcome==='SL').length;
+      const wr = ts.length ? +(tp/ts.length*100).toFixed(0) : null;
+      return { tp, sl, total: ts.length, wr };
+    };
+    const buy = calc('BUY'), sell = calc('SELL');
+    if (!buy.total && !sell.total) { el.innerHTML = '<div style="color:var(--muted);font-size:0.78rem">Chưa có dữ liệu</div>'; return; }
+    const wrColor = wr => wr===null?'var(--faint)':wr>=60?'#16a34a':wr>=40?'#d97706':'#dc2626';
+    const barRow = (label, color, data) => {
+      const wr = data.wr;
+      const pct = wr ?? 0;
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:0.72rem;font-weight:700;color:${color}">${label}</span>
+          <span style="font-size:0.68rem;color:var(--muted)">${data.tp} TP · ${data.sl} SL · ${data.total} lệnh</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div style="height:8px;border-radius:4px;background:${wrColor(wr)};width:${pct}%;transition:width .4s"></div>
+          </div>
+          <span style="font-size:0.8rem;font-weight:700;color:${wrColor(wr)};min-width:36px;text-align:right">${wr!==null?wr+'%':'—'}</span>
+        </div>
+      </div>`;
+    };
+    const diff = (buy.wr??0) - (sell.wr??0);
+    const note = Math.abs(diff) < 5 ? '✅ BUY và SELL khá cân bằng.' :
+      diff > 0 ? `📈 BUY mạnh hơn SELL ${Math.abs(diff)}% WR — cân nhắc ưu tiên BUY.` :
+                 `📉 SELL mạnh hơn BUY ${Math.abs(diff)}% WR — cân nhắc ưu tiên SELL.`;
+    el.innerHTML = barRow('↑ BUY', '#1a7a52', buy) + barRow('↓ SELL', '#c0392b', sell) +
+      `<div style="font-size:0.62rem;color:var(--muted);border-top:1px solid var(--border);padding-top:6px;margin-top:2px">${note}</div>`;
+  })();
+
+  // ── 3. AVG RR ──────────────────────────────────────────────────────────────
+  (function renderAvgRR() {
+    const el = document.getElementById('lavgrr-stats');
+    if (!el) return;
+    const avg = arr => arr.length ? +(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(2) : null;
+    const normalize = c => {
+      const m={'Case 01':'H1 Pullback','Case 02':'H1 Continuation','Case 03':'VCP','Case 04':'Other','EMA 50':'H1 Pullback','Engulfing HTF':'H1 Continuation','Engulf HTF':'H1 Continuation','EMA+Engulfing HTF':'VCP','EMA+Eng HTF':'VCP'};
+      return m[c]||c||'Other';
+    };
+    const CASE_COLOR = {'H1 Pullback':'var(--blue)','H1 Continuation':'var(--ink-2)','VCP':'var(--red)','Other':'#888'};
+    // Avg RR luôn tính ALL-TIME — không phụ thuộc bộ lọc tháng
+    const tpTrades = logTrades.filter(t => t.outcome === 'TP');
+
+    const rrHint = (planAvg, actAvg) => {
+      if (!planAvg || !actAvg) return '';
+      const gap = +(actAvg - planAvg).toFixed(2);
+      return gap > 0.3  ? `<span style="color:#16a34a;font-size:0.58rem">↑ +${gap}R · trailing</span>`
+           : gap < -0.2 ? `<span style="color:#dc2626;font-size:0.58rem">↓ ${gap}R · TP quá xa</span>`
+           : `<span style="color:var(--muted);font-size:0.58rem">✅ bám sát</span>`;
+    };
+
+    const rrCells = (planAvg, actAvg, planN, actN) => `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:3px">
+        <div style="background:var(--bg);border-radius:4px;padding:4px 6px;text-align:center">
+          <div style="font-size:0.48rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:1px">Plan avg</div>
+          <div style="font-size:0.95rem;font-weight:700;color:var(--ink)">${planAvg ?? '—'}</div>
+          <div style="font-size:0.48rem;color:var(--muted)">${planN} data</div>
+        </div>
+        <div style="background:var(--bg);border-radius:4px;padding:4px 6px;text-align:center">
+          <div style="font-size:0.48rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:1px">Thực tế avg</div>
+          <div style="font-size:0.95rem;font-weight:700;color:var(--blue)">${actAvg ?? '—'}</div>
+          <div style="font-size:0.48rem;color:var(--muted)">${actN} data</div>
+        </div>
+      </div>
+      ${rrHint(planAvg, actAvg)}`;
+
+    const renderByCase = () => {
+      const CASES = ['H1 Pullback','H1 Continuation','VCP','Other'];
+      const rows = CASES.map(cs => {
+        const ts = tpTrades.filter(t => normalize(t.caseType) === cs);
+        const planRRs = ts.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        const actRRs  = ts.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        return { cs, n: ts.length, planAvg: avg(planRRs), actAvg: avg(actRRs), planN: planRRs.length, actN: actRRs.length };
+      }).filter(r => r.n > 0);
+      if (!rows.length) return '<div style="color:var(--muted);font-size:0.75rem">Chưa có dữ liệu.</div>';
+      return rows.map((r, i) => `
+        <div style="margin-bottom:${i<rows.length-1?10:0}px;padding-bottom:${i<rows.length-1?10:0}px;${i<rows.length-1?'border-bottom:1px solid var(--border)':''}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:0.65rem;font-weight:700;color:${CASE_COLOR[r.cs]||'#888'}">${r.cs}</span>
+            <span style="font-size:0.58rem;color:var(--faint)">${r.n} lệnh TP</span>
+          </div>
+          ${rrCells(r.planAvg, r.actAvg, r.planN, r.actN)}
+        </div>`).join('');
+    };
+
+    const renderBySymbol = () => {
+      // Group by symbol
+      const symMap = {};
+      tpTrades.forEach(t => {
+        const sym = t.symbol || '?';
+        if (!symMap[sym]) symMap[sym] = {};
+        const cs = normalize(t.caseType);
+        if (!symMap[sym][cs]) symMap[sym][cs] = [];
+        symMap[sym][cs].push(t);
+      });
+      const syms = Object.keys(symMap).sort((a,b) => {
+        const totalA = Object.values(symMap[a]).reduce((s,arr)=>s+arr.length,0);
+        const totalB = Object.values(symMap[b]).reduce((s,arr)=>s+arr.length,0);
+        return totalB - totalA;
+      });
+      if (!syms.length) return '<div style="color:var(--muted);font-size:0.75rem">Chưa có dữ liệu.</div>';
+
+      return syms.map((sym, si) => {
+        const casesInSym = Object.keys(symMap[sym]).sort();
+        const totalN = casesInSym.reduce((s,cs)=>s+symMap[sym][cs].length,0);
+
+        const caseRows = casesInSym.map((cs, ci) => {
+          const ts = symMap[sym][cs];
+          const planRRs = ts.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+          const actRRs  = ts.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+          const pAvg = avg(planRRs), aAvg = avg(actRRs);
+          const isLastCase = ci === casesInSym.length - 1;
+          return `
+            <div style="display:table;width:100%;border-collapse:collapse;${isLastCase?'':'border-bottom:1px dashed var(--border)'}">
+              <div style="display:table-row">
+                <div style="display:table-cell;width:38%;vertical-align:middle;padding:7px 8px;border-right:1px solid var(--border)">
+                  <span style="font-size:0.6rem;font-weight:700;color:${CASE_COLOR[cs]||'#888'};display:block;line-height:1.3">${cs}</span>
+                  <span style="font-size:0.52rem;color:var(--faint)">${ts.length} lệnh</span>
+                </div>
+                <div style="display:table-cell;width:62%;vertical-align:middle;padding:7px 8px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px">
+                    <div style="background:var(--bg);border-radius:3px;padding:3px 6px;text-align:center">
+                      <div style="font-size:0.45rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px">Plan</div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--ink)">${pAvg ?? '—'}</div>
+                    </div>
+                    <div style="background:var(--bg);border-radius:3px;padding:3px 6px;text-align:center">
+                      <div style="font-size:0.45rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px">Thực tế</div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue)">${aAvg ?? '—'}</div>
+                    </div>
+                  </div>
+                  ${rrHint(pAvg, aAvg)}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+
+        return `
+          <div style="margin-bottom:${si<syms.length-1?12:0}px;padding-bottom:${si<syms.length-1?12:0}px;${si<syms.length-1?'border-bottom:2px solid var(--border)':''}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:0.72rem;font-weight:700;color:var(--ink)">${sym}</span>
+              <span style="font-size:0.58rem;color:var(--faint)">${totalN} lệnh TP</span>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:5px;overflow:hidden;background:var(--surface)">
+              ${caseRows}
+            </div>
+          </div>`;
+      }).join('');
+    };
+
+    if (!window._lavgrr_mode) window._lavgrr_mode = 'case';
+    const btnStyle = active => `font-size:0.62rem;font-weight:700;padding:0.18rem 0.65rem;border-radius:3px;cursor:pointer;font-family:inherit;border:1px solid ${active?'var(--ink)':'var(--border-dark)'};background:${active?'var(--ink)':'transparent'};color:${active?'#fff':'var(--muted)'};transition:all .12s;`;
+
+    window.lavgrrSetMode = (mode) => {
+      window._lavgrr_mode = mode;
+      document.getElementById('lavgrr-btn-case').style.cssText = btnStyle(mode==='case');
+      document.getElementById('lavgrr-btn-sym').style.cssText  = btnStyle(mode==='sym');
+      document.getElementById('lavgrr-body').innerHTML = mode === 'case' ? renderByCase() : renderBySymbol();
+    };
+
+    el.innerHTML = `
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <button id="lavgrr-btn-case" onclick="lavgrrSetMode('case')" style="${btnStyle(window._lavgrr_mode==='case')}">Case</button>
+        <button id="lavgrr-btn-sym"  onclick="lavgrrSetMode('sym')"  style="${btnStyle(window._lavgrr_mode==='sym')}">Symbol</button>
+      </div>
+      <div id="lavgrr-body"></div>`;
+
+    window.lavgrrSetMode(window._lavgrr_mode);
+  })();
+
+  // ── 4. GIỜ VÀO LỆNH ───────────────────────────────────────────────────────
+  (function renderHourStats() {
+    const el = document.getElementById('lhour-stats');
+    if (!el) return;
+    const byHour = {};
+    logTradesF.forEach(t => {
+      if (!t.openTime) return;
+      const h = new Date(t.openTime).getHours();
+      if (!byHour[h]) byHour[h] = { tp:0, sl:0, total:0 };
+      byHour[h].total++;
+      if (t.outcome==='TP') byHour[h].tp++;
+      else if (t.outcome==='SL') byHour[h].sl++;
+    });
+    const hours = Object.keys(byHour).map(Number).sort((a,b)=>a-b);
+    if (!hours.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.78rem">Chưa có dữ liệu</div>'; return; }
+
+    const maxTotal = Math.max(...hours.map(h=>byHour[h].total), 1);
+    const wrCol = wr => wr>=60?'#16a34a':wr>=40?'#d97706':'#dc2626';
+
+    // Tìm giờ tốt nhất (có ≥2 lệnh closed, WR cao nhất)
+    const ranked = hours
+      .map(h => { const d=byHour[h]; const closed=d.tp+d.sl; const wr=closed?+(d.tp/closed*100).toFixed(0):null; return {h,wr,closed,total:d.total}; })
+      .filter(x=>x.closed>=2)
+      .sort((a,b)=>(b.wr??0)-(a.wr??0));
+    const bestHour = ranked[0];
+
+    el.innerHTML = `
+      ${bestHour ? `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:8px">🏆 Giờ tốt nhất: <b style="color:var(--ink)">${bestHour.h}:00–${bestHour.h+1}:00</b> · WR ${bestHour.wr}% (${bestHour.closed} lệnh)</div>` : ''}
+      <div style="display:flex;flex-direction:column;gap:3px;">
+      ${hours.map(h => {
+        const d = byHour[h];
+        const closed = d.tp + d.sl;
+        const wr = closed ? +(d.tp/closed*100).toFixed(0) : null;
+        const barW = Math.round(d.total/maxTotal*100);
+        const col = wr!==null ? wrCol(wr) : 'var(--border-dark)';
+        return `<div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:0.58rem;color:var(--ink-2);min-width:28px;text-align:right">${String(h).padStart(2,'0')}h</span>
+          <div style="flex:1;height:10px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:10px;background:${col};width:${barW}%;border-radius:3px;opacity:0.85"></div>
+          </div>
+          <span style="font-size:0.6rem;font-weight:700;color:${col};min-width:30px">${wr!==null?wr+'%':'—'}</span>
+          <span style="font-size:0.55rem;color:var(--faint);min-width:18px">${d.total}x</span>
+        </div>`;
+      }).join('')}
+      </div>`;
+  })();
+
 }
 
 // ── CALENDAR ──────────────────────────────────────
