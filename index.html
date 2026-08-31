@@ -384,7 +384,7 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
       <div class="log-kpi-grid" id="lkpi-grid"></div>
 
       <!-- ══ BLOCK 1: TỔNG QUAN ══ -->
-      <div style="margin-top:1rem;background:#f7f5f2;border:1px solid #e0ddd8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+      <div style="margin-top:1rem;background:#f0f4ff;border:1.5px solid #a8c0e8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
         <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#a09d98;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:12px;height:2px;background:#a09d98;border-radius:1px;"></span>
           Tổng Quan
@@ -433,13 +433,12 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
       </div>
 
       <!-- ══ BLOCK 2: PHÂN TÍCH ALL-TIME ══ -->
-      <div style="margin-top:0.8rem;background:#f0ede8;border:1px solid #c8c4bc;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+      <div style="margin-top:0.8rem;background:#f0f4ff;border:1.5px solid #a8c0e8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
         <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#8a8680;font-weight:700;margin-bottom:0.4rem;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:12px;height:2px;background:#8a8680;border-radius:1px;"></span>
           Phân Tích All-Time
           <span style="display:inline-block;flex:1;height:1px;background:#c8c4bc;"></span>
         </div>
-        <div style="font-size:0.62rem;color:#8a8680;margin-bottom:0.75rem;font-style:italic;">Không phụ thuộc bộ lọc tháng — tổng hợp toàn bộ lệnh</div>
 
         <!-- Streak | BUY/SELL -->
         <div class="log-charts-2" style="margin-bottom:0.8rem">
@@ -456,14 +455,14 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
         <!-- Avg RR — full width, all-time -->
         <div style="margin-bottom:0.8rem;">
           <div class="log-card" style="border:1px solid #c8c4bc;overflow:hidden">
-            <div class="log-card-label">⚖️ Avg RR · Plan vs Thực Tế <span style="font-size:0.55rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--faint)">(theo Case · lệnh TP · toàn bộ)</span></div>
+            <div class="log-card-label">⚖️ Avg RR · Plan vs Thực Tế</div>
             <div id="lavgrr-stats"></div>
           </div>
         </div>
       </div>
 
       <!-- ══ BLOCK 3: CALENDAR ══ -->
-      <div style="margin-top:0.8rem;background:#ffffff;border:1px solid #dbe4f0;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
+      <div style="margin-top:0.8rem;background:#f0f4ff;border:1.5px solid #a8c0e8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
         <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#7a90b0;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:12px;height:2px;background:#7a90b0;border-radius:1px;"></span>
           Calendar
@@ -2381,11 +2380,9 @@ function logRenderStats(){
           <th>${window.t('js.kpi.be')}</th>
           <th>${window.t('js.kpi.open')}</th>
           <th>${window.t('js.kpi.winrate')}</th>
-          <th>${window.t('js.month.profit')}</th>
         </tr></thead>
         <tbody>
         ${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
-          const profitColor=m.profit>0?'var(--green)':m.profit<0?'var(--red)':'var(--ink-2)';
           return `<tr onclick="logStatsToggleMonth('${k}')" style="cursor:pointer;${isSel?'background:var(--blue-lt)':''}">
             <td style="font-weight:700;white-space:nowrap;${isSel?'color:var(--blue)':''}">${mm}/${y}${isSel?' ✓':''}</td>
             <td>${m.total}</td>
@@ -2394,7 +2391,6 @@ function logRenderStats(){
             <td>${m.be}</td>
             <td>${m.open}</td>
             <td>${closedN2?wr2+'%':'—'}</td>
-            <td style="font-weight:700;color:${profitColor};white-space:nowrap">${m.profit>0?'+':''}${m.profit.toFixed(2)}</td>
           </tr>`;
         }).join('')}
         </tbody>
@@ -2414,10 +2410,10 @@ function logRenderStats(){
             <div><div class="lmonth-card-stat-label">${window.t('js.kpi.be')}</div><div class="lmonth-card-stat-val">${m.be}</div></div>
             <div><div class="lmonth-card-stat-label">${window.t('js.kpi.open')}</div><div class="lmonth-card-stat-val">${m.open}</div></div>
           </div>
-          <div class="lmonth-card-profit"><span>${window.t('js.month.profit')}</span><b style="color:${profitColor}">${m.profit>0?'+':''}${m.profit.toFixed(2)}</b></div>
+
         </div>`;
       }).join('')}</div>`;
-      monthEl.innerHTML=`<div style="font-size:0.65rem;color:var(--faint);margin-bottom:0.4rem" data-i18n="js.month.hint">${window.t('js.month.hint')}</div>${tableHtml}${cardsHtml}`;
+      monthEl.innerHTML=`${tableHtml}${cardsHtml}`;
     }
   }
 
@@ -2539,18 +2535,6 @@ function logRenderStats(){
               <div style="background:var(--surface);border-radius:6px;padding:6px 4px;">
                 <div style="font-size:0.44rem;letter-spacing:.8px;text-transform:uppercase;color:${col};opacity:.7;margin-bottom:3px;">${lbl}</div>
                 <div style="font-size:1rem;font-weight:800;color:${col}">${val}</div>
-              </div>`).join('')}
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-              ${[['TP','#16a34a',r.tp,maxTP],['SL','#dc2626',r.sl,maxSL],['BE','#d97706',r.be,maxBE]].map(([lbl,col,val,mx])=>`
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-                  <span style="font-size:0.55rem;font-weight:700;color:${col};letter-spacing:.5px">${lbl}</span>
-                  <span style="font-size:0.55rem;font-weight:700;color:${col}">${val}</span>
-                </div>
-                <div style="height:6px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden;">
-                  <div style="height:6px;border-radius:3px;background:${col};width:${mx?Math.round(val/mx*100):0}%;transition:width .4s"></div>
-                </div>
               </div>`).join('')}
             </div>
           </div>
