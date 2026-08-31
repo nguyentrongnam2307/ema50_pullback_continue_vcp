@@ -2493,55 +2493,70 @@ function logRenderStats(){
       : kind==='eq' ? 'background:rgba(124,58,237,.12);color:#6d28d9'
       : 'background:var(--bg);color:var(--ink-2)';
 
-    // ── Unified card grid (desktop + mobile, same layout) ──
-    const _renderCardGrid = (rowList, label) => rowList.map(r => {
-      const closed = r.tp + r.sl;
-      const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
-      const kind = _kind(r);
-      const wrTxt = wr2!==null ? wr2+'% WR' : '— WR';
-      return `<div class="lsym-pair-card" style="border:1px solid #e0ddd8;border-radius:10px;padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.55rem;${_cardBorder(kind)}">
-        <!-- Header -->
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
-          <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;min-width:0;">
-            <span style="font-weight:800;font-size:0.92rem;color:var(--ink);letter-spacing:.3px;white-space:nowrap">${r.sym}</span>
-            ${_badge(kind)}
-          </div>
-          <span style="font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;${_wrBg(kind)}">${wrTxt}</span>
-        </div>
-        <!-- Stats row -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;text-align:center;border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07);padding:0.45rem 0;">
-          <div>
-            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-bottom:2px;">Tổng</div>
-            <div style="font-size:0.82rem;font-weight:700;color:var(--ink)">${r.total}</div>
-          </div>
-          <div>
-            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#15803d;margin-bottom:2px;">TP</div>
-            <div style="font-size:0.82rem;font-weight:700;color:#16a34a">${r.tp}</div>
-          </div>
-          <div>
-            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#b91c1c;margin-bottom:2px;">SL</div>
-            <div style="font-size:0.82rem;font-weight:700;color:#dc2626">${r.sl}</div>
-          </div>
-          <div>
-            <div style="font-size:0.46rem;letter-spacing:.8px;text-transform:uppercase;color:#a16207;margin-bottom:2px;">BE</div>
-            <div style="font-size:0.82rem;font-weight:700;color:#d97706">${r.be}</div>
-          </div>
-        </div>
-        <!-- Bar row -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-          ${[['TP','#16a34a',r.tp,maxTP],['SL','#dc2626',r.sl,maxSL],['BE','#d97706',r.be,maxBE]].map(([lbl,col,val,mx])=>`
-          <div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-              <span style="font-size:0.52rem;font-weight:700;color:${col};letter-spacing:.5px">${lbl}</span>
-              <span style="font-size:0.52rem;font-weight:700;color:${col}">${val}</span>
+    // ── Accordion list per symbol ──
+    window._lsymOpen = window._lsymOpen || {};
+    window.lsymToggle = (el) => {
+      const sym    = el.dataset.sym;
+      const fullId = el.dataset.id;
+      window._lsymOpen[fullId] = !window._lsymOpen[fullId];
+      const detail = document.getElementById('lsym-detail-'+fullId);
+      const arrow  = document.getElementById('lsym-arrow-'+fullId);
+      if (detail) detail.style.display = window._lsymOpen[fullId] ? 'block' : 'none';
+      if (arrow)  arrow.textContent    = window._lsymOpen[fullId] ? '▲' : '▼';
+    };
+
+    const _renderCardGrid = (rowList, panelKey) => {
+      if (!rowList.length) return '';
+      return rowList.map(r => {
+        const closed = r.tp + r.sl;
+        const wr2 = closed ? +(r.tp/closed*100).toFixed(0) : null;
+        const wrTxt = wr2!==null ? wr2+'% WR' : '— WR';
+        const kind = _kind(r);
+        // fullId = panelKey + sym để tránh trùng giữa các tab
+        const fullId = (panelKey + '_' + r.sym).replace(/[^a-z0-9]/gi,'_');
+        const isOpen = !!window._lsymOpen[fullId];
+        const accentColor = kind==='tp'?'#2563eb':kind==='sl'?'#ea580c':kind==='eq'?'#7c3aed':'#94a3b8';
+        const headerBg    = kind==='tp'?'linear-gradient(90deg,#eff6ff,#fff)':kind==='sl'?'linear-gradient(90deg,#fff7ed,#fff)':kind==='eq'?'linear-gradient(90deg,#faf5ff,#fff)':'var(--surface)';
+
+        return `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+          <div onclick="lsymToggle(this)" data-sym="${r.sym}" data-id="${fullId}" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;background:${headerBg};border-left:4px solid ${accentColor};transition:filter .12s;user-select:none;"
+            onmouseover="this.style.filter='brightness(.97)'" onmouseout="this.style.filter=''">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+              <span style="font-weight:800;font-size:0.85rem;color:var(--ink);letter-spacing:.3px;white-space:nowrap">${r.sym}</span>
+              ${_badge(kind)}
             </div>
-            <div style="height:5px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden;">
-              <div style="height:5px;border-radius:3px;background:${col};width:${mx?Math.round(val/mx*100):0}%;transition:width .4s"></div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <span style="font-size:0.62rem;color:#16a34a;font-weight:700">TP <b>${r.tp}</b></span>
+              <span style="font-size:0.62rem;color:#dc2626;font-weight:700">SL <b>${r.sl}</b></span>
+              <span style="font-size:0.62rem;color:#d97706;font-weight:700">BE <b>${r.be}</b></span>
+              <span style="font-size:0.65rem;font-weight:800;padding:2px 8px;border-radius:12px;${_wrBg(kind)}">${wrTxt}</span>
             </div>
-          </div>`).join('')}
-        </div>
-      </div>`;
-    }).join('');
+            <span id="lsym-arrow-${fullId}" style="font-size:0.52rem;color:var(--faint);margin-left:4px;">${isOpen?'▲':'▼'}</span>
+          </div>
+          <div id="lsym-detail-${fullId}" style="display:${isOpen?'block':'none'};padding:12px 14px;background:var(--bg);border-top:1px solid var(--border);">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-bottom:10px;">
+              ${[['Tổng','var(--ink)',r.total],['TP','#16a34a',r.tp],['SL','#dc2626',r.sl],['BE','#d97706',r.be]].map(([lbl,col,val])=>`
+              <div style="background:var(--surface);border-radius:6px;padding:6px 4px;">
+                <div style="font-size:0.44rem;letter-spacing:.8px;text-transform:uppercase;color:${col};opacity:.7;margin-bottom:3px;">${lbl}</div>
+                <div style="font-size:1rem;font-weight:800;color:${col}">${val}</div>
+              </div>`).join('')}
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              ${[['TP','#16a34a',r.tp,maxTP],['SL','#dc2626',r.sl,maxSL],['BE','#d97706',r.be,maxBE]].map(([lbl,col,val,mx])=>`
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:0.55rem;font-weight:700;color:${col};letter-spacing:.5px">${lbl}</span>
+                  <span style="font-size:0.55rem;font-weight:700;color:${col}">${val}</span>
+                </div>
+                <div style="height:6px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden;">
+                  <div style="height:6px;border-radius:3px;background:${col};width:${mx?Math.round(val/mx*100):0}%;transition:width .4s"></div>
+                </div>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    };
 
     // ── Tab-filtered views ──
     // "Tất cả"  → sort: pinned (tp/sl/eq) lên trước, rồi total desc
@@ -2590,15 +2605,15 @@ function logRenderStats(){
       ${_tabBtn('eq',   '⚖️ SL = TP', '#7c3aed', false)}
     </div>`;
 
-    const _grid = (rows2, emptyMsg) => rows2.length
-      ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">${_renderCardGrid(rows2)}</div>`
+    const _grid = (rows2, emptyMsg, panelKey) => rows2.length
+      ? `<div>${_renderCardGrid(rows2, panelKey)}</div>`
       : `<div style="color:var(--muted);padding:0.8rem;font-size:0.78rem;text-align:center">${emptyMsg}</div>`;
 
     const panelsHtml =
-      `<div id="lsym-panel-all">${_grid(allRows,'Chưa có dữ liệu')}</div>`+
-      `<div id="lsym-panel-tp"  style="display:none">${_grid(tpRows,'Không có cặp TP MAX')}</div>`+
-      `<div id="lsym-panel-sl"  style="display:none">${_grid(slRows,'Không có cặp SL MAX')}</div>`+
-      `<div id="lsym-panel-eq"  style="display:none">${_grid(eqRows,'Không có cặp SL = TP')}</div>`;
+      `<div id="lsym-panel-all">${_grid(allRows,'Chưa có dữ liệu','all')}</div>`+
+      `<div id="lsym-panel-tp"  style="display:none">${_grid(tpRows,'Không có cặp TP','tp')}</div>`+
+      `<div id="lsym-panel-sl"  style="display:none">${_grid(slRows,'Không có cặp SL','sl')}</div>`+
+      `<div id="lsym-panel-eq"  style="display:none">${_grid(eqRows,'Không có cặp SL = TP','eq')}</div>`;
 
     bodyEl.innerHTML = tabsHtml + panelsHtml;
 
@@ -3120,7 +3135,6 @@ function logRenderStats(){
     };
 
     const renderBySymbol = () => {
-      // Group by symbol
       const symMap = {};
       tpTrades.forEach(t => {
         const sym = t.symbol || '?';
@@ -3136,15 +3150,38 @@ function logRenderStats(){
       });
       if (!syms.length) return '<div style="color:var(--muted);font-size:0.75rem">Chưa có dữ liệu.</div>';
 
+      // Tổng avg RR toàn symbol (plan & actual)
+      const _symAvg = (sym) => {
+        const allTs = Object.values(symMap[sym]).flat();
+        const plans = allTs.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        const acts  = allTs.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        return { pAvg: avg(plans), aAvg: avg(acts) };
+      };
+
+      // Toggle accordion
+      window._lavgrr_open = window._lavgrr_open || {};
+      window.lavgrrToggleSym = (sym) => {
+        window._lavgrr_open[sym] = !window._lavgrr_open[sym];
+        const detailEl = document.getElementById('lavgrr-sym-detail-' + sym.replace(/[^a-z0-9]/gi,'_'));
+        const arrowEl  = document.getElementById('lavgrr-sym-arrow-'  + sym.replace(/[^a-z0-9]/gi,'_'));
+        if (!detailEl) return;
+        const open = window._lavgrr_open[sym];
+        detailEl.style.display = open ? 'block' : 'none';
+        if (arrowEl) arrowEl.textContent = open ? '▲' : '▼';
+      };
+
       return syms.map((sym, si) => {
         const casesInSym = Object.keys(symMap[sym]).sort();
         const totalN = casesInSym.reduce((s,cs)=>s+symMap[sym][cs].length,0);
+        const { pAvg, aAvg } = _symAvg(sym);
+        const safeId = sym.replace(/[^a-z0-9]/gi,'_');
+        const isOpen = !!window._lavgrr_open[sym];
 
         const caseRows = casesInSym.map((cs, ci) => {
           const ts = symMap[sym][cs];
           const planRRs = ts.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
           const actRRs  = ts.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
-          const pAvg = avg(planRRs), aAvg = avg(actRRs);
+          const cpAvg = avg(planRRs), caAvg = avg(actRRs);
           const isLastCase = ci === casesInSym.length - 1;
           return `
             <div style="display:table;width:100%;border-collapse:collapse;${isLastCase?'':'border-bottom:1px dashed var(--border)'}">
@@ -3157,26 +3194,43 @@ function logRenderStats(){
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px">
                     <div style="background:var(--bg);border-radius:3px;padding:3px 6px;text-align:center">
                       <div style="font-size:0.45rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px">Plan</div>
-                      <div style="font-size:0.88rem;font-weight:700;color:var(--ink)">${pAvg ?? '—'}</div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--ink)">${cpAvg ?? '—'}</div>
                     </div>
                     <div style="background:var(--bg);border-radius:3px;padding:3px 6px;text-align:center">
                       <div style="font-size:0.45rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px">Thực tế</div>
-                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue)">${aAvg ?? '—'}</div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue)">${caAvg ?? '—'}</div>
                     </div>
                   </div>
-                  ${rrHint(pAvg, aAvg)}
+                  ${rrHint(cpAvg, caAvg)}
                 </div>
               </div>
             </div>`;
         }).join('');
 
+        // WR-style badge màu theo avg actual
+        const badgeColor = aAvg === null ? 'var(--faint)' : aAvg >= 3 ? '#16a34a' : aAvg >= 2 ? '#2563eb' : '#d97706';
+
         return `
-          <div style="margin-bottom:${si<syms.length-1?12:0}px;padding-bottom:${si<syms.length-1?12:0}px;${si<syms.length-1?'border-bottom:2px solid var(--border)':''}">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:0.72rem;font-weight:700;color:var(--ink)">${sym}</span>
-              <span style="font-size:0.58rem;color:var(--faint)">${totalN} lệnh TP</span>
+          <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:7px;overflow:hidden;">
+            <!-- Header row — click để toggle -->
+            <div onclick="lavgrrToggleSym('${sym}')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;background:var(--surface);transition:background .12s;user-select:none;"
+              onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--surface)'">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.75rem;font-weight:800;color:var(--ink);letter-spacing:.3px">${sym}</span>
+                <span style="font-size:0.58rem;color:var(--faint)">${totalN} lệnh TP</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${pAvg !== null || aAvg !== null ? `
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:0.58rem;color:var(--faint)">Plan <b style="color:var(--ink)">${pAvg ?? '—'}</b></span>
+                  <span style="font-size:0.6rem;color:var(--faint)">→</span>
+                  <span style="font-size:0.58rem;color:var(--faint)">Thực tế <b style="color:${badgeColor}">${aAvg ?? '—'}</b></span>
+                </div>` : ''}
+                <span id="lavgrr-sym-arrow-${safeId}" style="font-size:0.55rem;color:var(--faint);margin-left:2px;">${isOpen ? '▲' : '▼'}</span>
+              </div>
             </div>
-            <div style="border:1px solid var(--border);border-radius:5px;overflow:hidden;background:var(--surface)">
+            <!-- Detail (ẩn mặc định) -->
+            <div id="lavgrr-sym-detail-${safeId}" style="display:${isOpen?'block':'none'};border-top:1px solid var(--border);background:var(--surface)">
               ${caseRows}
             </div>
           </div>`;
