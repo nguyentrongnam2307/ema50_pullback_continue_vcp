@@ -2378,6 +2378,108 @@ function logRenderStats(){
       });
       const wrCardCol=p=>p>=60?'#16a34a':p>=40?'#d97706':'#dc2626';
       // ── Table (desktop) ──
+	  const chartId='lmonth-chart-'+Date.now();
+		const chartHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem 0.8rem;margin-bottom:0.8rem;">
+		  <div style="font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:0.8rem;">📊 Tổng Quan Theo Tháng</div>
+		  <div style="position:relative;height:220px;"><canvas id="${chartId}"></canvas></div>
+		  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:0.6rem;justify-content:center;">
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>TP</span>
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:10px;height:10px;border-radius:2px;background:#dc2626;display:inline-block"></span>SL</span>
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:10px;height:10px;border-radius:2px;background:#d97706;display:inline-block"></span>BE</span>
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:2px;height:12px;background:#2c4a7c;display:inline-block"></span>Win Rate %</span>
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:2px;height:12px;background:#16a34a;display:inline-block;border-style:dashed"></span>Actual R</span>
+			<span style="display:flex;align-items:center;gap:4px;font-size:0.62rem;color:var(--ink-2)"><span style="width:2px;height:12px;background:#6b7280;display:inline-block"></span>Plan R</span>
+		  </div>
+		</div>`;
+
+		// Render chart sau khi DOM cập nhật
+		setTimeout(()=>{
+		  const ctx=document.getElementById(chartId);
+		  if(!ctx||!window.Chart) return;
+
+		  // 12 tháng cố định theo năm hiện tại (hoặc năm của dữ liệu mới nhất)
+		  const latestYear = rowsData.length ? parseInt(rowsData[0].y) : new Date().getFullYear();
+		  const allMonths = Array.from({length:12},(_,i)=>{
+			const mm=String(i+1).padStart(2,'0');
+			return {key:`${latestYear}-${mm}`, label:`${mm}/${latestYear}`};
+		  });
+
+		  // Map dữ liệu vào đúng tháng
+		  const monthMap={};
+		  rowsData.forEach(({k,m})=>{ monthMap[k]=m; });
+
+		  const labels   = allMonths.map(x=>x.label);
+		    const tpData   = allMonths.map(x=>monthMap[x.key]?.tp  ||0);
+			  const slData   = allMonths.map(x=>monthMap[x.key]?.sl  ||0);
+			  const beData   = allMonths.map(x=>monthMap[x.key]?.be  ||0);
+			  const wrData   = allMonths.map(x=>{
+				const m=monthMap[x.key];
+				if(!m) return null;
+				const closed=(m.tp||0)+(m.sl||0);
+				return closed?Math.round(m.tp/closed*100):null;
+			  });
+
+			  if(window._lmonthChart) window._lmonthChart.destroy();
+		  window._lmonthChart=new Chart(ctx,{
+			data:{
+			  labels,
+			  datasets:[
+				{type:'bar',label:'TP',data:tpData,backgroundColor:'rgba(22,163,74,0.80)',borderRadius:3,yAxisID:'yCount',order:2},
+				  {type:'bar',label:'SL',data:slData,backgroundColor:'rgba(220,38,38,0.80)',borderRadius:3,yAxisID:'yCount',order:2},
+				  {type:'bar',label:'BE',data:beData,backgroundColor:'rgba(217,119,6,0.80)',borderRadius:3,yAxisID:'yCount',order:2},
+				  {type:'line',label:'Win Rate %',data:wrData,borderColor:'#2c4a7c',backgroundColor:'rgba(44,74,124,0.10)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#2c4a7c',tension:0.3,fill:true,yAxisID:'yWR',order:1,spanGaps:false},
+			  ]
+			},
+			options:{
+			  responsive:true,maintainAspectRatio:false,
+			  interaction:{mode:'index',intersect:false},
+			  plugins:{
+				legend:{display:false},
+				tooltip:{
+				  callbacks:{
+					label:c=>{
+					  const v=c.parsed.y;
+					  if(!v) return null;
+					  return ` ${c.dataset.label}: ${v}`;
+					},
+					footer:items=>{
+					  const tp=items.find(i=>i.dataset.label==='TP')?.parsed.y||0;
+					  const sl=items.find(i=>i.dataset.label==='SL')?.parsed.y||0;
+					  const closed=tp+sl;
+					  if(!closed) return '';
+					  const wr=Math.round(tp/closed*100);
+					  const mk=allMonths[items[0].dataIndex].key;
+					  const m=monthMap[mk];
+					  const rrA=m?.rrActualCount>0?` · Actual +${m.rrActualSum.toFixed(1)}R`:'';
+					  const rrP=m?.rrPlanCount>0?` · Plan +${m.rrPlanSum.toFixed(1)}R`:'';
+					  return `WR: ${wr}%${rrA}${rrP}`;
+					}
+				  }
+				}
+			  },
+			  scales:{
+			  x:{
+				grid:{display:false},
+				ticks:{color:'#666',font:{size:10}}
+			  },
+			  yCount:{
+				type:'linear',position:'left',
+				min:0,
+				grid:{color:'rgba(0,0,0,0.05)'},
+				ticks:{color:'#666',font:{size:10},stepSize:1},
+				title:{display:true,text:'Số lệnh',color:'#999',font:{size:10}}
+			  },
+			  yWR:{
+				type:'linear',position:'right',
+				min:0,max:100,
+				grid:{display:false},
+				ticks:{color:'#2c4a7c',font:{size:10},callback:v=>v+'%'},
+				title:{display:true,text:'Win Rate',color:'#2c4a7c',font:{size:10}}
+			  }
+			}
+			}
+		  });
+		},80);
       const tableHtml=`<div class="lmonth-table-wrap"><table style="min-width:700px">
 		  <thead><tr>
 			<th>${window.t('js.month.label')}</th>
@@ -2430,7 +2532,7 @@ function logRenderStats(){
 			</div>
         </div>`;
       }).join('')}</div>`;
-      monthEl.innerHTML=`${tableHtml}${cardsHtml}`;
+      monthEl.innerHTML=`${chartHtml}${tableHtml}${cardsHtml}`;
     }
   }
 
