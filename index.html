@@ -2347,18 +2347,23 @@ function logRenderStats(){
   if(monthEl){
     const caseTradesAll = logTrades.filter(t=>LOG_CASES.includes(_normCase(t)));
     const byMonth={};
-    caseTradesAll.forEach(t=>{
-      const key=_monthKey(t);
-      if(!key) return;
-      if(!byMonth[key]) byMonth[key]={tp:0,sl:0,be:0,open:0,total:0,profit:0};
-      const m=byMonth[key];
-      m.total++;
-      m.profit+=(t.profit||0);
-      if(t.outcome==='TP') m.tp++;
-      else if(t.outcome==='SL') m.sl++;
-      else if(t.outcome==='BE') m.be++;
-      else if(t.outcome==='Open') m.open++;
-    });
+	caseTradesAll.forEach(t=>{
+	  const key=_monthKey(t);
+	  if(!key) return;
+	  if(!byMonth[key]) byMonth[key]={tp:0,sl:0,be:0,open:0,total:0,profit:0,rrActualSum:0,rrActualCount:0,rrPlanSum:0,rrPlanCount:0};
+	  const m=byMonth[key];
+	  m.total++;
+	  m.profit+=(t.profit||0);
+	  if(t.outcome==='TP'){
+		  m.tp++;
+		  const rrA=parseFloat(t.rrActual);
+		  const rrP=parseFloat(t.rrPlan);
+		  if(!isNaN(rrA)&&rrA>0){m.rrActualSum+=rrA;m.rrActualCount++;}
+		  if(!isNaN(rrP)&&rrP>0){m.rrPlanSum+=rrP;m.rrPlanCount++;}
+		} else if(t.outcome==='SL') m.sl++;
+	  else if(t.outcome==='BE') m.be++;
+	  else if(t.outcome==='Open') m.open++;
+	});
     const monthKeys=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a)); // mới nhất trước
     if(!monthKeys.length){
       monthEl.innerHTML='<div style="color:var(--muted);padding:1rem;font-size:0.78rem">📊 '+window.t('js.noorders')+'</div>';
@@ -2373,30 +2378,39 @@ function logRenderStats(){
       });
       const wrCardCol=p=>p>=60?'#16a34a':p>=40?'#d97706':'#dc2626';
       // ── Table (desktop) ──
-      const tableHtml=`<div class="lmonth-table-wrap"><table style="min-width:640px">
-        <thead><tr>
-          <th>${window.t('js.month.label')}</th>
-          <th>${window.t('js.kpi.total')}</th>
-          <th>${window.t('js.kpi.tp')}</th>
-          <th>${window.t('js.kpi.sl')}</th>
-          <th>${window.t('js.kpi.be')}</th>
-          <th>${window.t('js.kpi.open')}</th>
-          <th>${window.t('js.kpi.winrate')}</th>
-        </tr></thead>
-        <tbody>
-        ${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
-          return `<tr onclick="logStatsToggleMonth('${k}')" style="cursor:pointer;${isSel?'background:var(--blue-lt)':''}">
-            <td style="font-weight:700;white-space:nowrap;${isSel?'color:var(--blue)':''}">${mm}/${y}${isSel?' ✓':''}</td>
-            <td>${m.total}</td>
-            <td>${m.tp}</td>
-            <td>${m.sl}</td>
-            <td>${m.be}</td>
-            <td>${m.open}</td>
-            <td>${closedN2?wr2+'%':'—'}</td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-      </table></div>`;
+      const tableHtml=`<div class="lmonth-table-wrap"><table style="min-width:700px">
+		  <thead><tr>
+			<th>${window.t('js.month.label')}</th>
+			<th>${window.t('js.kpi.total')}</th>
+			<th>${window.t('js.kpi.tp')}</th>
+			<th>${window.t('js.kpi.sl')}</th>
+			<th>${window.t('js.kpi.be')}</th>
+			<th>${window.t('js.kpi.open')}</th>
+			<th>${window.t('js.kpi.winrate')}</th>
+			<th title="Tổng RR thực tế MAX (rrActual) từ lệnh TP">MAX R</th>
+			<th title="Tổng RR kế hoạch (rrPlan) từ lệnh TP">Plan R</th>
+		  </tr></thead>
+		  <tbody>
+		  ${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
+			const rrActualStr=m.rrActualCount>0?'+'+m.rrActualSum.toFixed(2)+'R':'—';
+			const rrPlanStr=m.rrPlanCount>0?'+'+m.rrPlanSum.toFixed(2)+'R':'—';
+			const rrActualCol=m.rrActualCount>0?'color:#16a34a;font-weight:700':'color:var(--faint)';
+			const rrPlanCol=m.rrPlanCount>0?'color:var(--blue);font-weight:700':'color:var(--faint)';
+
+			return `<tr onclick="logStatsToggleMonth('${k}')" style="cursor:pointer;${isSel?'background:var(--blue-lt)':''}">
+			  <td style="font-weight:700;white-space:nowrap;${isSel?'color:var(--blue)':''}">${mm}/${y}${isSel?' ✓':''}</td>
+			  <td>${m.total}</td>
+			  <td>${m.tp}</td>
+			  <td>${m.sl}</td>
+			  <td>${m.be}</td>
+			  <td>${m.open}</td>
+			  <td>${closedN2?wr2+'%':'—'}</td>
+			  <td style="${rrActualCol}">${rrActualStr}</td>
+			  <td style="${rrPlanCol}">${rrPlanStr}</td>
+			</tr>`;
+		  }).join('')}
+		  </tbody>
+		</table></div>`;
       // ── Cards (mobile) — gọn trong 1 màn hình, không cần scroll ngang ──
       const cardsHtml=`<div class="lmonth-cards">${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
         const profitColor=m.profit>0?'var(--green)':m.profit<0?'var(--red)':'var(--ink-2)';
@@ -2405,14 +2419,15 @@ function logRenderStats(){
             <span class="lmonth-card-name">${mm}/${y}${isSel?' ✓':''}</span>
             <span class="lmonth-card-wr" style="color:${closedN2?wrCardCol(wr2):'var(--faint)'}">${closedN2?wr2+'%':'—'} WR</span>
           </div>
-          <div class="lmonth-card-stats">
-            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.total')}</div><div class="lmonth-card-stat-val">${m.total}</div></div>
-            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.tp')}</div><div class="lmonth-card-stat-val" style="color:#16a34a">${m.tp}</div></div>
-            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.sl')}</div><div class="lmonth-card-stat-val" style="color:#dc2626">${m.sl}</div></div>
-            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.be')}</div><div class="lmonth-card-stat-val">${m.be}</div></div>
-            <div><div class="lmonth-card-stat-label">${window.t('js.kpi.open')}</div><div class="lmonth-card-stat-val">${m.open}</div></div>
-          </div>
-
+          <div class="lmonth-card-stats" style="grid-template-columns:repeat(7,1fr)">
+			  <div><div class="lmonth-card-stat-label">Tổng</div><div class="lmonth-card-stat-val">${m.total}</div></div>
+			  <div><div class="lmonth-card-stat-label">TP</div><div class="lmonth-card-stat-val" style="color:#16a34a">${m.tp}</div></div>
+			  <div><div class="lmonth-card-stat-label">SL</div><div class="lmonth-card-stat-val" style="color:#dc2626">${m.sl}</div></div>
+			  <div><div class="lmonth-card-stat-label">BE</div><div class="lmonth-card-stat-val">${m.be}</div></div>
+			  <div><div class="lmonth-card-stat-label">Open</div><div class="lmonth-card-stat-val">${m.open}</div></div>
+			  <div><div class="lmonth-card-stat-label">MAX R</div><div class="lmonth-card-stat-val" style="${m.rrActualCount>0?'color:#16a34a':'color:var(--faint)'}">${m.rrActualCount>0?'+'+m.rrActualSum.toFixed(1)+'R':'—'}</div></div>
+			  <div><div class="lmonth-card-stat-label">Plan R</div><div class="lmonth-card-stat-val" style="${m.rrPlanCount>0?'color:var(--blue)':'color:var(--faint)'}">${m.rrPlanCount>0?'+'+m.rrPlanSum.toFixed(1)+'R':'—'}</div></div>
+			</div>
         </div>`;
       }).join('')}</div>`;
       monthEl.innerHTML=`${tableHtml}${cardsHtml}`;
