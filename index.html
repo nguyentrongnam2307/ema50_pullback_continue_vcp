@@ -2387,8 +2387,8 @@ function logRenderStats(){
 			<th>${window.t('js.kpi.be')}</th>
 			<th>${window.t('js.kpi.open')}</th>
 			<th>${window.t('js.kpi.winrate')}</th>
-			<th title="Tổng RR thực tế MAX (rrActual) từ lệnh TP">MAX R</th>
 			<th title="Tổng RR kế hoạch (rrPlan) từ lệnh TP">Plan R</th>
+			<th title="Tổng RR thực tế MAX (rrActual) từ lệnh TP">MAX R</th>
 		  </tr></thead>
 		  <tbody>
 		  ${rowsData.map(({k,m,closedN2,wr2,mm,y,isSel})=>{
@@ -2405,8 +2405,8 @@ function logRenderStats(){
 			  <td>${m.be}</td>
 			  <td>${m.open}</td>
 			  <td>${closedN2?wr2+'%':'—'}</td>
-			  <td style="${rrActualCol}">${rrActualStr}</td>
 			  <td style="${rrPlanCol}">${rrPlanStr}</td>
+			  <td style="${rrActualCol}">${rrActualStr}</td>
 			</tr>`;
 		  }).join('')}
 		  </tbody>
@@ -2425,8 +2425,8 @@ function logRenderStats(){
 			  <div><div class="lmonth-card-stat-label">SL</div><div class="lmonth-card-stat-val" style="color:#dc2626">${m.sl}</div></div>
 			  <div><div class="lmonth-card-stat-label">BE</div><div class="lmonth-card-stat-val">${m.be}</div></div>
 			  <div><div class="lmonth-card-stat-label">Open</div><div class="lmonth-card-stat-val">${m.open}</div></div>
-			  <div><div class="lmonth-card-stat-label">MAX R</div><div class="lmonth-card-stat-val" style="${m.rrActualCount>0?'color:#16a34a':'color:var(--faint)'}">${m.rrActualCount>0?'+'+m.rrActualSum.toFixed(1)+'R':'—'}</div></div>
 			  <div><div class="lmonth-card-stat-label">Plan R</div><div class="lmonth-card-stat-val" style="${m.rrPlanCount>0?'color:var(--blue)':'color:var(--faint)'}">${m.rrPlanCount>0?'+'+m.rrPlanSum.toFixed(1)+'R':'—'}</div></div>
+			  <div><div class="lmonth-card-stat-label">MAX R</div><div class="lmonth-card-stat-val" style="${m.rrActualCount>0?'color:#16a34a':'color:var(--faint)'}">${m.rrActualCount>0?'+'+m.rrActualSum.toFixed(1)+'R':'—'}</div></div>
 			</div>
         </div>`;
       }).join('')}</div>`;
