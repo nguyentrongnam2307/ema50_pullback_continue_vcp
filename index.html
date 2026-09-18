@@ -461,7 +461,31 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
         </div>
       </div>
 
-      <!-- ══ BLOCK 3: CALENDAR ══ -->
+      <!-- ══ BLOCK 3: MARKET vs LIMIT COMPARISON ══ -->
+      <div id="llimit-block" style="margin-top:0.8rem;background:#fffbea;border:1.5px solid #e8c97a;border-radius:8px;padding:1rem 1rem 0.6rem;position:relative;display:none;">
+        <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#7a5c00;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:12px;height:2px;background:#b8860b;border-radius:1px;"></span>
+          📌 Market vs Limit · So Sánh Cùng Lệnh
+          <span style="display:inline-block;flex:1;height:1px;background:#e8c97a;"></span>
+        </div>
+
+        <!-- Summary KPI: Market avg vs Limit avg trên cùng tập lệnh có cả 2 -->
+        <div id="llimit-summary" style="margin-bottom:0.8rem;"></div>
+
+        <!-- Bảng so sánh từng lệnh: Market col vs Limit col -->
+        <div class="log-card" style="border:1px solid #e8c97a;overflow:hidden;margin-bottom:0.8rem;">
+          <div class="log-card-label" style="color:#7a5c00;">📋 So Sánh Từng Lệnh · Market ↔ Limit</div>
+          <div id="llimit-compare-table" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Giờ open Limit phân bố -->
+        <div class="log-card" style="border:1px solid #e8c97a;margin-bottom:0.8rem;">
+          <div class="log-card-label" style="color:#7a5c00;">⏰ Giờ Đặt Limit · Win Rate theo Giờ</div>
+          <div id="llimit-hour-stats"></div>
+        </div>
+      </div>
+
+      <!-- ══ BLOCK 4: CALENDAR ══ -->
       <div style="margin-top:0.8rem;background:#f0f4ff;border:1.5px solid #a8c0e8;border-radius:8px;padding:1rem 1rem 0.4rem;position:relative;">
         <div style="font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:#7a90b0;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:12px;height:2px;background:#7a90b0;border-radius:1px;"></span>
@@ -674,17 +698,54 @@ modal-head { display: flex; align-items: center; justify-content: space-between;
 
       <div class="log-fg span2">
         <label data-i18n="lf.rr.actual">RR <span style="font-size:0.62rem;color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0"></span></label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
-            <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Plan <span style="font-weight:400;text-transform:none;letter-spacing:0">(RR dự định)</span></div>
-            <input type="number" id="lf-rr-plan" step="0.01" min="0" placeholder="VD: 2.0" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+
+        <!-- Market Order RR (luôn hiện) -->
+        <div style="margin-bottom:6px;">
+          <div style="font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:5px;">
+            <span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--blue);flex-shrink:0;"></span>
+            Market Order
           </div>
-          <div>
-            <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Thực tế MAX <span style="font-weight:400;text-transform:none;letter-spacing:0">(giá đi được xa nhất)</span></div>
-            <input type="number" id="lf-rr-actual" step="0.01" min="0" placeholder="VD: 2.5" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Plan <span style="font-weight:400;text-transform:none;letter-spacing:0">(RR dự định)</span></div>
+              <input type="number" id="lf-rr-plan" step="0.01" min="0" placeholder="VD: 2.0" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+            </div>
+            <div>
+              <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:3px;">Thực tế MAX <span style="font-weight:400;text-transform:none;letter-spacing:0">(giá đi được xa nhất)</span></div>
+              <input type="number" id="lf-rr-actual" step="0.01" min="0" placeholder="VD: 2.5" style="width:100%;background:var(--surface);border:1px solid var(--border-dark);color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+            </div>
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:5px">
+
+        <!-- Checkbox Lệnh Limit -->
+        <label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:0.72rem;font-weight:700;color:var(--ink-2);text-transform:none;letter-spacing:0;padding:4px 0 3px;user-select:none;">
+          <input type="checkbox" id="lf-is-limit" style="accent-color:#b8860b;width:14px;height:14px;cursor:pointer;" onchange="logToggleLimitRR()">
+          <span>📌 Lệnh Limit</span>
+        </label>
+
+        <!-- Limit Order RR (ẩn mặc định) -->
+        <div id="lf-limit-rr-wrap" style="display:none;margin-top:5px;padding:9px 11px;background:#fffbea;border:1.5px solid #e8c97a;border-radius:5px;">
+          <div style="font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:#7a5c00;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+            <span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:#b8860b;flex-shrink:0;"></span>
+            Limit Order RR
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:#7a5c00;font-weight:600;margin-bottom:3px;">Plan <span style="font-weight:400;text-transform:none;letter-spacing:0">(RR dự định – limit)</span></div>
+              <input type="number" id="lf-rr-plan-limit" step="0.01" min="0" placeholder="VD: 3.0" style="width:100%;background:#fff;border:1px solid #e8c97a;color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+            </div>
+            <div>
+              <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:#7a5c00;font-weight:600;margin-bottom:3px;">Thực tế MAX <span style="font-weight:400;text-transform:none;letter-spacing:0">(giá đi được xa nhất)</span></div>
+              <input type="number" id="lf-rr-actual-limit" step="0.01" min="0" placeholder="VD: 3.5" style="width:100%;background:#fff;border:1px solid #e8c97a;color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+            </div>
+          </div>
+          <div style="margin-top:7px;">
+            <div style="font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:#7a5c00;font-weight:600;margin-bottom:3px;">⏰ Giờ Open Limit <span style="font-weight:400;text-transform:none;letter-spacing:0">(lúc đặt lệnh chờ)</span></div>
+            <input type="datetime-local" id="lf-limit-open-time" style="width:100%;background:#fff;border:1px solid #e8c97a;color:var(--ink);padding:0.4rem 0.7rem;border-radius:4px;font-family:inherit;font-size:0.78rem;"/>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
           <label style="display:flex;align-items:center;gap:4px;font-size:0.7rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink-2)">
             <input type="radio" name="lf-outcome" id="lf-outcome-sl" value="SL" style="accent-color:var(--red)"> Hit SL
           </label>
@@ -1756,6 +1817,15 @@ function logOpenTradeModal(trade,sym){
   if(rrPlanEl) rrPlanEl.value=trade?.rrPlan!=null?trade.rrPlan:'';
   const rrActualEl=document.getElementById('lf-rr-actual');
   if(rrActualEl) rrActualEl.value=trade?.rrActual!=null?trade.rrActual:'';
+  // Limit order fields
+  const isLimitEl=document.getElementById('lf-is-limit');
+  if(isLimitEl){ isLimitEl.checked=!!(trade?.isLimit); logToggleLimitRR(); }
+  const rrPlanLimitEl=document.getElementById('lf-rr-plan-limit');
+  if(rrPlanLimitEl) rrPlanLimitEl.value=trade?.rrPlanLimit!=null?trade.rrPlanLimit:'';
+  const rrActualLimitEl=document.getElementById('lf-rr-actual-limit');
+  if(rrActualLimitEl) rrActualLimitEl.value=trade?.rrActualLimit!=null?trade.rrActualLimit:'';
+  const limitOpenTimeEl=document.getElementById('lf-limit-open-time');
+  if(limitOpenTimeEl) limitOpenTimeEl.value=trade?.limitOpenTime||'';
   g('lf-profit').value=trade?.profit!=null?trade.profit:'';
   // outcome radio
   const outcome=trade?.outcome||'';
@@ -1799,6 +1869,13 @@ function logOpenTradeModal(trade,sym){
 
 }
 window.logCalcRR = ()=>{}; // fields removed
+
+window.logToggleLimitRR = () => {
+  const cb = document.getElementById('lf-is-limit');
+  const wrap = document.getElementById('lf-limit-rr-wrap');
+  if (!cb || !wrap) return;
+  wrap.style.display = cb.checked ? 'block' : 'none';
+};
 
 
 
@@ -1868,6 +1945,10 @@ window.logSaveTrade = async ()=>{
     note:val('lf-note'),
     rrPlan:(()=>{const v=parseFloat(document.getElementById('lf-rr-plan')?.value);return isNaN(v)||v<=0?null:v;})(),
     rrActual:(()=>{const v=parseFloat(document.getElementById('lf-rr-actual')?.value);return isNaN(v)||v<=0?null:v;})(),
+    isLimit:!!(document.getElementById('lf-is-limit')?.checked),
+    rrPlanLimit:(()=>{const v=parseFloat(document.getElementById('lf-rr-plan-limit')?.value);return isNaN(v)||v<=0?null:v;})(),
+    rrActualLimit:(()=>{const v=parseFloat(document.getElementById('lf-rr-actual-limit')?.value);return isNaN(v)||v<=0?null:v;})(),
+    limitOpenTime:document.getElementById('lf-limit-open-time')?.value||'',
 
     clChecks:Object.fromEntries((window.LOG_CL_ITEMS||[]).map(([k])=>[k,!!document.getElementById('lf-cl-'+k)?.checked])),
     imgCount,
@@ -2132,6 +2213,10 @@ window.logRenderHistory = ()=>{
           ${t.entryTF?`<span style="font-size:10px;font-weight:600;color:var(--blue);white-space:nowrap;background:var(--blue-lt);border:1px solid #a8bad8;padding:1px 5px;border-radius:3px;">${t.entryTF}</span>`:''}
           ${t.rrPlan!=null?`<span title="Plan RR (dự định)" style="font-size:10px;font-weight:700;white-space:nowrap;background:#f0f4ff;border:1px solid #a8bad8;color:var(--blue);padding:1px 6px;border-radius:3px;">📐 1:${t.rrPlan}</span>`:''}
           ${t.rrActual!=null?`<span title="MAX thực tế (giá đi được xa nhất)" style="font-size:10px;font-weight:700;white-space:nowrap;background:${t.rrActual>=t.rrPlan?'var(--green-lt)':'#fff8ee'};border:1px solid ${t.rrActual>=t.rrPlan?'#6fcfa0':'#e8c97a'};color:${t.rrActual>=t.rrPlan?'var(--green)':'#b8860b'};padding:1px 6px;border-radius:3px;">📈 MAX 1:${t.rrActual}</span>`:''}
+          ${t.isLimit?`<span title="Lệnh Limit Order" style="font-size:10px;font-weight:700;white-space:nowrap;background:#fffbea;border:1px solid #e8c97a;color:#7a5c00;padding:1px 6px;border-radius:3px;">📌 Limit</span>`:''}
+          ${t.isLimit&&t.limitOpenTime?`<span title="Giờ open lệnh Limit" style="font-size:10px;font-weight:700;white-space:nowrap;background:#fffbea;border:1px solid #e8c97a;color:#7a5c00;padding:1px 6px;border-radius:3px;">⏰ ${(()=>{const d=new Date(t.limitOpenTime);return isNaN(d)?t.limitOpenTime:d.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});})()}</span>`:''}
+          ${t.isLimit&&t.rrPlanLimit!=null?`<span title="Limit Plan RR (dự định)" style="font-size:10px;font-weight:700;white-space:nowrap;background:#fffbea;border:1px solid #e8c97a;color:#7a5c00;padding:1px 6px;border-radius:3px;">📐L 1:${t.rrPlanLimit}</span>`:''}
+          ${t.isLimit&&t.rrActualLimit!=null?`<span title="Limit MAX thực tế" style="font-size:10px;font-weight:700;white-space:nowrap;background:${t.rrActualLimit>=(t.rrPlanLimit||0)?'var(--green-lt)':'#fff8ee'};border:1px solid ${t.rrActualLimit>=(t.rrPlanLimit||0)?'#6fcfa0':'#e8c97a'};color:${t.rrActualLimit>=(t.rrPlanLimit||0)?'var(--green)':'#b8860b'};padding:1px 6px;border-radius:3px;">📈L MAX 1:${t.rrActualLimit}</span>`:''}
           ${t.emotion?`<span title="${t.emotion}">${LOG_EMO_EMOJI[t.emotion]||''}</span>`:''}
 
           ${t.note?`<span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.note}">${t.note}</span>`:''}
@@ -3203,7 +3288,14 @@ function logRenderStats(){
            : `<span style="color:var(--muted);font-size:0.58rem">✅ bám sát</span>`;
     };
 
-    const rrCells = (planAvg, actAvg, planN, actN) => `
+    // Nguồn RR: Market (rrPlan/rrActual) hoặc Limit (rrPlanLimit/rrActualLimit)
+    const RR_SRC = {
+      market: { planKey: 'rrPlan',      actKey: 'rrActual',      accent: 'var(--blue)', label: '🔵 Market' },
+      limit:  { planKey: 'rrPlanLimit', actKey: 'rrActualLimit', accent: '#b8860b',      label: '🟡 Limit'  },
+    };
+    const getRR = (t, key) => { const v = parseFloat(t[key]); return (!isNaN(v) && v > 0) ? v : NaN; };
+
+    const rrCells = (planAvg, actAvg, planN, actN, accent) => `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:3px">
         <div style="background:var(--bg);border-radius:4px;padding:4px 6px;text-align:center">
           <div style="font-size:0.48rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:1px">Plan avg</div>
@@ -3212,52 +3304,59 @@ function logRenderStats(){
         </div>
         <div style="background:var(--bg);border-radius:4px;padding:4px 6px;text-align:center">
           <div style="font-size:0.48rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:1px">Thực tế avg</div>
-          <div style="font-size:0.95rem;font-weight:700;color:var(--blue)">${actAvg ?? '—'}</div>
+          <div style="font-size:0.95rem;font-weight:700;color:${accent}">${actAvg ?? '—'}</div>
           <div style="font-size:0.48rem;color:var(--muted)">${actN} data</div>
         </div>
       </div>
       ${rrHint(planAvg, actAvg)}`;
 
-    const renderByCase = () => {
+    const renderByCase = (src) => {
+      const { planKey, actKey, accent } = RR_SRC[src];
       const CASES = ['H1 Pullback','H1 Continuation','VCP','Other'];
       const rows = CASES.map(cs => {
-        const ts = tpTrades.filter(t => normalize(t.caseType) === cs);
-        const planRRs = ts.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
-        const actRRs  = ts.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        const allTs = tpTrades.filter(t => normalize(t.caseType) === cs);
+        // Ở chế độ Limit: chỉ đếm/tính trên các lệnh THỰC SỰ có RR Limit, không lấy tổng lệnh Market
+        const ts = src === 'limit' ? allTs.filter(t => !isNaN(getRR(t, planKey)) || !isNaN(getRR(t, actKey))) : allTs;
+        const planRRs = ts.map(t=>getRR(t, planKey)).filter(v=>!isNaN(v));
+        const actRRs  = ts.map(t=>getRR(t, actKey)).filter(v=>!isNaN(v));
         return { cs, n: ts.length, planAvg: avg(planRRs), actAvg: avg(actRRs), planN: planRRs.length, actN: actRRs.length };
       }).filter(r => r.n > 0);
-      if (!rows.length) return '<div style="color:var(--muted);font-size:0.75rem">Chưa có dữ liệu.</div>';
+      if (!rows.length) return `<div style="color:var(--muted);font-size:0.75rem">Chưa có lệnh nào có dữ liệu ${src==='limit'?'Limit':'Market'}.</div>`;
       return rows.map((r, i) => `
         <div style="margin-bottom:${i<rows.length-1?10:0}px;padding-bottom:${i<rows.length-1?10:0}px;${i<rows.length-1?'border-bottom:1px solid var(--border)':''}">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
             <span style="font-size:0.65rem;font-weight:700;color:${CASE_COLOR[r.cs]||'#888'}">${r.cs}</span>
-            <span style="font-size:0.58rem;color:var(--faint)">${r.n} lệnh TP</span>
+            <span style="font-size:0.58rem;color:var(--faint)">${r.n} lệnh ${src==='limit'?'Limit':'TP'}</span>
           </div>
-          ${rrCells(r.planAvg, r.actAvg, r.planN, r.actN)}
+          ${rrCells(r.planAvg, r.actAvg, r.planN, r.actN, accent)}
         </div>`).join('');
     };
 
-    const renderBySymbol = () => {
+    const renderBySymbol = (src) => {
+      const { planKey, actKey, accent } = RR_SRC[src];
+      // Ở chế độ Limit: chỉ lấy các lệnh THỰC SỰ có RR Limit, không tính chung với tổng lệnh Market
+      const srcTrades = src === 'limit' ? tpTrades.filter(t => !isNaN(getRR(t, planKey)) || !isNaN(getRR(t, actKey))) : tpTrades;
       const symMap = {};
-      tpTrades.forEach(t => {
+      srcTrades.forEach(t => {
         const sym = t.symbol || '?';
         if (!symMap[sym]) symMap[sym] = {};
         const cs = normalize(t.caseType);
         if (!symMap[sym][cs]) symMap[sym][cs] = [];
         symMap[sym][cs].push(t);
       });
-      const syms = Object.keys(symMap).sort((a,b) => {
+      let syms = Object.keys(symMap);
+      syms = syms.sort((a,b) => {
         const totalA = Object.values(symMap[a]).reduce((s,arr)=>s+arr.length,0);
         const totalB = Object.values(symMap[b]).reduce((s,arr)=>s+arr.length,0);
         return totalB - totalA;
       });
-      if (!syms.length) return '<div style="color:var(--muted);font-size:0.75rem">Chưa có dữ liệu.</div>';
+      if (!syms.length) return `<div style="color:var(--muted);font-size:0.75rem">Chưa có lệnh nào có dữ liệu ${src==='limit'?'Limit':'Market'}.</div>`;
 
       // Tổng avg RR toàn symbol (plan & actual)
       const _symAvg = (sym) => {
         const allTs = Object.values(symMap[sym]).flat();
-        const plans = allTs.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
-        const acts  = allTs.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+        const plans = allTs.map(t=>getRR(t, planKey)).filter(v=>!isNaN(v));
+        const acts  = allTs.map(t=>getRR(t, actKey)).filter(v=>!isNaN(v));
         return { pAvg: avg(plans), aAvg: avg(acts) };
       };
 
@@ -3282,8 +3381,8 @@ function logRenderStats(){
 
         const caseRows = casesInSym.map((cs, ci) => {
           const ts = symMap[sym][cs];
-          const planRRs = ts.map(t=>{const v=parseFloat(t.rrPlan);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
-          const actRRs  = ts.map(t=>{const v=parseFloat(t.rrActual);return (!isNaN(v)&&v>0)?v:NaN;}).filter(v=>!isNaN(v));
+          const planRRs = ts.map(t=>getRR(t, planKey)).filter(v=>!isNaN(v));
+          const actRRs  = ts.map(t=>getRR(t, actKey)).filter(v=>!isNaN(v));
           const cpAvg = avg(planRRs), caAvg = avg(actRRs);
           const isLastCase = ci === casesInSym.length - 1;
           return `
@@ -3301,7 +3400,7 @@ function logRenderStats(){
                     </div>
                     <div style="background:var(--bg);border-radius:3px;padding:3px 6px;text-align:center">
                       <div style="font-size:0.45rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px">Thực tế</div>
-                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue)">${caAvg ?? '—'}</div>
+                      <div style="font-size:0.88rem;font-weight:700;color:${accent}">${caAvg ?? '—'}</div>
                     </div>
                   </div>
                   ${rrHint(cpAvg, caAvg)}
@@ -3320,7 +3419,7 @@ function logRenderStats(){
               onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--surface)'">
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:0.75rem;font-weight:800;color:var(--ink);letter-spacing:.3px">${sym}</span>
-                <span style="font-size:0.58rem;color:var(--faint)">${totalN} lệnh TP</span>
+                <span style="font-size:0.58rem;color:var(--faint)">${totalN} lệnh ${src==='limit'?'Limit':'TP'}</span>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
                 ${pAvg !== null || aAvg !== null ? `
@@ -3334,33 +3433,277 @@ function logRenderStats(){
             </div>
             <!-- Detail (ẩn mặc định) -->
             <div id="lavgrr-sym-detail-${safeId}" style="display:${isOpen?'block':'none'};border-top:1px solid var(--border);background:var(--surface)">
-              ${caseRows}
+              ${caseRows || '<div style="padding:8px 12px;font-size:0.58rem;color:var(--faint)">Không có case nào có RR Limit</div>'}
             </div>
           </div>`;
       }).join('');
     };
 
     if (!window._lavgrr_mode) window._lavgrr_mode = 'case';
+    if (!window._lavgrr_src)  window._lavgrr_src  = 'market';
     const btnStyle = active => `font-size:0.62rem;font-weight:700;padding:0.18rem 0.65rem;border-radius:3px;cursor:pointer;font-family:inherit;border:1px solid ${active?'var(--ink)':'var(--border-dark)'};background:${active?'var(--ink)':'transparent'};color:${active?'#fff':'var(--muted)'};transition:all .12s;`;
+    const srcBtnStyle = (active, src) => {
+      const accent = RR_SRC[src].accent;
+      return `font-size:0.62rem;font-weight:700;padding:0.18rem 0.65rem;border-radius:3px;cursor:pointer;font-family:inherit;border:1px solid ${active?accent:'var(--border-dark)'};background:${active?accent:'transparent'};color:${active?'#fff':'var(--muted)'};transition:all .12s;`;
+    };
+
+    const renderBody = () => {
+      const mode = window._lavgrr_mode, src = window._lavgrr_src;
+      document.getElementById('lavgrr-body').innerHTML = mode === 'case' ? renderByCase(src) : renderBySymbol(src);
+    };
 
     window.lavgrrSetMode = (mode) => {
       window._lavgrr_mode = mode;
       document.getElementById('lavgrr-btn-case').style.cssText = btnStyle(mode==='case');
       document.getElementById('lavgrr-btn-sym').style.cssText  = btnStyle(mode==='sym');
-      document.getElementById('lavgrr-body').innerHTML = mode === 'case' ? renderByCase() : renderBySymbol();
+      renderBody();
+    };
+    window.lavgrrSetSrc = (src) => {
+      window._lavgrr_src = src;
+      document.getElementById('lavgrr-btn-mkt').style.cssText = srcBtnStyle(src==='market','market');
+      document.getElementById('lavgrr-btn-lmt').style.cssText = srcBtnStyle(src==='limit','limit');
+      renderBody();
     };
 
     el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:0.5rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint)">Nguồn RR:</span>
+        <button id="lavgrr-btn-mkt" onclick="lavgrrSetSrc('market')" style="${srcBtnStyle(window._lavgrr_src==='market','market')}">🔵 Market</button>
+        <button id="lavgrr-btn-lmt" onclick="lavgrrSetSrc('limit')"  style="${srcBtnStyle(window._lavgrr_src==='limit','limit')}">🟡 Limit</button>
+      </div>
       <div style="display:flex;gap:4px;margin-bottom:8px">
         <button id="lavgrr-btn-case" onclick="lavgrrSetMode('case')" style="${btnStyle(window._lavgrr_mode==='case')}">Case</button>
         <button id="lavgrr-btn-sym"  onclick="lavgrrSetMode('sym')"  style="${btnStyle(window._lavgrr_mode==='sym')}">Symbol</button>
       </div>
       <div id="lavgrr-body"></div>`;
 
-    window.lavgrrSetMode(window._lavgrr_mode);
+    renderBody();
   })();
 
-  // ── 4. GIỜ VÀO LỆNH ───────────────────────────────────────────────────────
+  // ── 4. MARKET vs LIMIT COMPARISON ──────────────────────────────────────────
+  (function renderLimitStats() {
+    const block = document.getElementById('llimit-block');
+    if (!block) return;
+
+    // Chỉ xét lệnh có đánh dấu isLimit (có cả Market RR lẫn Limit RR trên cùng 1 trade)
+    const limitTrades = logTradesF.filter(t => t.isLimit);
+    if (!limitTrades.length) { block.style.display = 'none'; return; }
+    block.style.display = 'block';
+
+    // Helper
+    const avg = arr => arr.length ? +(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(2) : null;
+    const wrCol = wr => wr >= 60 ? '#16a34a' : wr >= 40 ? '#d97706' : '#dc2626';
+    const rrColor = v => v == null ? 'var(--faint)' : v >= 3 ? '#16a34a' : v >= 2 ? '#2563eb' : v >= 1 ? '#d97706' : '#dc2626';
+
+    // Tập lệnh có ĐỦ CẢ HAI để so sánh trực tiếp
+    const bothTrades = limitTrades.filter(t =>
+      (t.rrPlan != null || t.rrActual != null) &&
+      (t.rrPlanLimit != null || t.rrActualLimit != null)
+    );
+    // Tập chỉ có Market RR
+    const mktOnly = limitTrades.filter(t =>
+      (t.rrPlan != null || t.rrActual != null) &&
+      t.rrPlanLimit == null && t.rrActualLimit == null
+    );
+    // Tập chỉ có Limit RR
+    const limOnly = limitTrades.filter(t =>
+      t.rrPlan == null && t.rrActual == null &&
+      (t.rrPlanLimit != null || t.rrActualLimit != null)
+    );
+
+    // ── SUMMARY: avg RR Market vs Limit trên tập bothTrades ──────────────────
+    const summaryEl = document.getElementById('llimit-summary');
+    if (summaryEl) {
+      const mktPlanArr    = bothTrades.map(t=>t.rrPlan).filter(v=>v!=null);
+      const mktActualArr  = bothTrades.map(t=>t.rrActual).filter(v=>v!=null);
+      const limPlanArr    = bothTrades.map(t=>t.rrPlanLimit).filter(v=>v!=null);
+      const limActualArr  = bothTrades.map(t=>t.rrActualLimit).filter(v=>v!=null);
+      const avgMktPlan    = avg(mktPlanArr);
+      const avgMktActual  = avg(mktActualArr);
+      const avgLimPlan    = avg(limPlanArr);
+      const avgLimActual  = avg(limActualArr);
+
+      // Win rate của tập limitTrades (outcome chung — không chia Market/Limit)
+      const ltClosed = limitTrades.filter(t => t.outcome==='TP'||t.outcome==='SL');
+      const ltTP     = limitTrades.filter(t => t.outcome==='TP');
+      const ltWR     = ltClosed.length ? +(ltTP.length/ltClosed.length*100).toFixed(1) : null;
+
+      const diffPlan   = (avgMktPlan   != null && avgLimPlan   != null) ? +(avgLimPlan   - avgMktPlan).toFixed(2)   : null;
+      const diffActual = (avgMktActual != null && avgLimActual != null) ? +(avgLimActual - avgMktActual).toFixed(2) : null;
+      const diffSign   = v => v == null ? '' : v > 0 ? `<span style="color:#16a34a;font-size:0.7rem;font-weight:700;">▲ +${v}R</span>` : v < 0 ? `<span style="color:#dc2626;font-size:0.7rem;font-weight:700;">▼ ${v}R</span>` : `<span style="color:var(--faint);font-size:0.7rem;">= 0R</span>`;
+
+      const kpiCard = (label, sub, mkt, lim, diff) => `
+        <div style="background:var(--surface);border:1px solid #e8c97a;border-radius:6px;padding:0.75rem 0.9rem;">
+          <div style="font-size:0.5rem;letter-spacing:1.5px;text-transform:uppercase;color:#a07000;margin-bottom:1px;">${label}</div>
+          <div style="font-size:0.55rem;color:var(--faint);margin-bottom:6px;">${sub}</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
+            <div style="text-align:center;">
+              <div style="font-size:0.48rem;color:#2c4a7c;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;font-weight:600;" title="Kết quả nếu vào lệnh ngay bằng Market">🔵 Market</div>
+              <div style="font-size:1.1rem;font-weight:700;color:${rrColor(mkt)};">${mkt != null ? '1:'+mkt : '—'}</div>
+            </div>
+            <div style="text-align:center;font-size:0.65rem;color:var(--faint);">vs</div>
+            <div style="text-align:center;">
+              <div style="font-size:0.48rem;color:#b8860b;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;font-weight:600;" title="Kết quả nếu đặt lệnh chờ Limit cho cùng setup">🟡 Limit</div>
+              <div style="font-size:1.1rem;font-weight:700;color:${rrColor(lim)};">${lim != null ? '1:'+lim : '—'}</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:5px;min-height:16px;">${diffSign(diff)}</div>
+        </div>`;
+
+      summaryEl.innerHTML = bothTrades.length === 0
+        ? `<div style="padding:0.6rem;background:var(--surface);border:1px solid #e8c97a;border-radius:6px;font-size:0.75rem;color:var(--muted);">
+            Chưa có lệnh nào có đủ cả RR Market lẫn RR Limit để so sánh.<br>
+            <span style="font-size:0.65rem;color:var(--faint);">Tổng lệnh Limit: ${limitTrades.length} — nhập thêm RR ở cả 2 phần để thấy so sánh.</span>
+           </div>`
+        : `
+        <div style="font-size:0.62rem;color:#7a5c00;margin-bottom:8px;">
+          Avg trên <b>${bothTrades.length}</b> lệnh có đủ cả 2 RR · Win Rate lệnh: <b style="color:${ltWR!=null?wrCol(ltWR):'var(--faint)'}">${ltWR!=null?ltWR+'%':'—'}</b>
+          (${ltTP.length}W / ${ltClosed.length - ltTP.length}L / ${limitTrades.length} tổng)
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${kpiCard('Plan RR ', 'RR bạn dự tính lúc lên kế hoạch', avgMktPlan, avgLimPlan, diffPlan)}
+          ${kpiCard('MAX Thực Tế ', 'RR nếu chốt đúng đỉnh/đáy giá đi được', avgMktActual, avgLimActual, diffActual)}
+        </div>
+        ${diffPlan != null || diffActual != null ? `
+        <div style="margin-top:8px;padding:7px 10px;background:var(--surface);border:1px solid #e8c97a;border-radius:5px;font-size:0.65rem;color:#7a5c00;">
+          ${diffPlan != null
+            ? (diffPlan > 0
+                ? `📌 Limit plan <b>cao hơn Market ${diffPlan}R</b>`
+                : diffPlan < 0
+                  ? `📌 Limit plan <b>thấp hơn Market ${Math.abs(diffPlan)}R</b>`
+                  : `📌 Plan RR Market và Limit <b>tương đương</b>.`)
+            : ''}
+          ${diffActual != null
+            ? `<br>${diffActual > 0
+                ? `📈 Thực tế Limit <b>vượt Market ${diffActual}R</b>`
+                : diffActual < 0
+                  ? `📉 Thực tế Limit <b>thấp hơn Market ${Math.abs(diffActual)}R</b> — market entry cho kết quả tốt hơn thực tế.`
+                  : `📈 Thực tế MAX Market và Limit <b>ngang nhau</b>.`}`
+            : ''}
+        </div>` : ''}`;
+    }
+
+    // ── BẢNG SO SÁNH TỪNG LỆNH ───────────────────────────────────────────────
+    const tableEl = document.getElementById('llimit-compare-table');
+    if (tableEl) {
+      if (!limitTrades.length) {
+        tableEl.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:0.75rem;">Chưa có lệnh Limit</div>';
+      } else {
+        // Sắp xếp mới nhất trước
+        const sorted = [...limitTrades].sort((a,b) => new Date(b.openTime||0) - new Date(a.openTime||0));
+        const thS = 'padding:5px 8px;font-size:0.52rem;letter-spacing:1px;text-transform:uppercase;font-weight:600;text-align:center;white-space:nowrap;border-bottom:2px solid #e8c97a;';
+        const tdS = 'padding:5px 8px;font-size:0.65rem;text-align:center;border-bottom:1px solid #fde68a;vertical-align:middle;';
+
+        const outcome_badge = t => {
+          const o = t.outcome || '?';
+          const col = o==='TP'?'#16a34a':o==='SL'?'#dc2626':o==='BE'?'#d97706':'#2563eb';
+          return `<span style="font-size:0.58rem;font-weight:700;color:${col};">${o}</span>`;
+        };
+
+        const rr_cell = (plan, actual, isLimit) => {
+          const bc = isLimit ? '#fffbea' : '#f0f4ff';
+          const pc = isLimit ? '#b8860b' : '#2c4a7c';
+          const ac = actual != null && plan != null
+            ? (actual >= plan ? '#16a34a' : '#d97706')
+            : actual != null ? '#16a34a' : 'var(--faint)';
+          return `<td style="${tdS}background:${bc};">
+            ${plan   != null ? `<div style="font-size:0.58rem;color:${pc};">P: 1:${plan}</div>` : ''}
+            ${actual != null ? `<div style="font-size:0.62rem;font-weight:700;color:${ac};">M: 1:${actual}</div>` : (plan != null ? '<div style="font-size:0.55rem;color:var(--faint);">—</div>' : '')}
+            ${plan == null && actual == null ? '<span style="color:var(--faint);font-size:0.58rem;">—</span>' : ''}
+          </td>`;
+        };
+
+        const diff_cell = t => {
+          const mA = t.rrActual, lA = t.rrActualLimit;
+          const mP = t.rrPlan,   lP = t.rrPlanLimit;
+          if (mA == null || lA == null) return `<td style="${tdS}color:var(--faint);font-size:0.55rem;">—</td>`;
+          const d = +(lA - mA).toFixed(2);
+          const col = d > 0 ? '#16a34a' : d < 0 ? '#dc2626' : 'var(--muted)';
+          const arrow = d > 0 ? '▲' : d < 0 ? '▼' : '=';
+          return `<td style="${tdS}font-weight:700;color:${col};">${arrow} ${d > 0 ? '+' : ''}${d}R</td>`;
+        };
+
+        let h = `
+        <table style="width:100%;border-collapse:collapse;min-width:520px;">
+          <thead><tr style="background:#fff8e1;">
+            <th style="${thS}text-align:left;color:var(--ink-2);">Lệnh</th>
+            <th style="${thS}color:#2c4a7c;" title="Nếu vào lệnh ngay bằng Market">🔵 Market RR<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">(vào ngay)</span></th>
+            <th style="${thS}color:#b8860b;" title="Nếu đặt lệnh chờ Limit">🟡 Limit RR<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">(đặt chờ)</span></th>
+            <th style="${thS}color:var(--ink-2);" title="Chênh lệch RR Max thực tế giữa Limit và Market">Δ MAX<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">(Limit − Market)</span></th>
+            <th style="${thS}color:var(--ink-2);">Kết quả</th>
+          </tr></thead><tbody>`;
+
+        sorted.forEach(t => {
+          const d = t.openTime ? new Date(t.openTime) : null;
+          const dateStr = d ? d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+          const limitTimeStr = t.limitOpenTime ? (() => {
+            const ld = new Date(t.limitOpenTime);
+            return isNaN(ld) ? '' : ' ⏰'+ld.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+          })() : '';
+          h += `<tr>
+            <td style="${tdS}text-align:left;padding-left:10px;">
+              <div style="font-weight:700;color:var(--ink);font-size:0.7rem;">${t.symbol||'—'}</div>
+              <div style="font-size:0.55rem;color:var(--faint);">${dateStr}${limitTimeStr}</div>
+              <div style="margin-top:1px;"><span style="font-size:0.55rem;font-weight:700;padding:0 4px;border-radius:2px;" class="${t.type==='BUY'?'td-buy':'td-sell'}">${t.type||''}</span></div>
+            </td>
+            ${rr_cell(t.rrPlan, t.rrActual, false)}
+            ${rr_cell(t.rrPlanLimit, t.rrActualLimit, true)}
+            ${diff_cell(t)}
+            <td style="${tdS}">${outcome_badge(t)}</td>
+          </tr>`;
+        });
+        h += '</tbody></table>';
+        tableEl.innerHTML = h;
+      }
+    }
+
+    // ── GIỜ ĐẶT LIMIT ────────────────────────────────────────────────────────
+    const hourEl = document.getElementById('llimit-hour-stats');
+    if (hourEl) {
+      const byHour = {};
+      limitTrades.forEach(t => {
+        const timeStr = t.limitOpenTime || t.openTime;
+        if (!timeStr) return;
+        const h = new Date(timeStr).getHours();
+        if (isNaN(h)) return;
+        if (!byHour[h]) byHour[h] = { total:0, tp:0, sl:0 };
+        byHour[h].total++;
+        if (t.outcome==='TP') byHour[h].tp++;
+        else if (t.outcome==='SL') byHour[h].sl++;
+      });
+      const hours = Object.keys(byHour).map(Number).sort((a,b)=>a-b);
+      if (!hours.length) {
+        hourEl.innerHTML = '<div style="color:var(--muted);font-size:0.78rem">Chưa có dữ liệu giờ</div>';
+      } else {
+        const maxTotal = Math.max(...hours.map(h=>byHour[h].total), 1);
+        const ranked = hours.map(h=>{
+          const d=byHour[h]; const closed=d.tp+d.sl;
+          return {h, wr:closed?+(d.tp/closed*100).toFixed(0):null, closed, total:d.total};
+        }).filter(x=>x.closed>=1).sort((a,b)=>(b.wr??0)-(a.wr??0));
+        const best = ranked[0];
+        hourEl.innerHTML = `
+          ${best ? `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:8px;">🏆 Giờ đặt Limit tốt nhất: <b style="color:#7a5c00;">${best.h}:00–${best.h+1}:00</b> · WR ${best.wr}% (${best.closed} lệnh)</div>` : ''}
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            ${hours.map(h => {
+              const d=byHour[h]; const closed=d.tp+d.sl;
+              const wr=closed?+(d.tp/closed*100).toFixed(0):null;
+              const barW=Math.round(d.total/maxTotal*100);
+              const col=wr!==null?wrCol(wr):'#e8c97a';
+              return `<div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.58rem;color:#7a5c00;min-width:28px;text-align:right;">${String(h).padStart(2,'0')}h</span>
+                <div style="flex:1;height:10px;background:#fef3c7;border-radius:3px;overflow:hidden;">
+                  <div style="height:10px;background:${col};width:${barW}%;border-radius:3px;opacity:0.85;"></div>
+                </div>
+                <span style="font-size:0.6rem;font-weight:700;color:${col};min-width:30px;">${wr!==null?wr+'%':'—'}</span>
+                <span style="font-size:0.55rem;color:var(--faint);min-width:18px;">${d.total}x</span>
+              </div>`;
+            }).join('')}
+          </div>`;
+      }
+    }
+  })();
+
+  // ── 5. GIỜ VÀO LỆNH ───────────────────────────────────────────────────────
   (function renderHourStats() {
     const el = document.getElementById('lhour-stats');
     if (!el) return;
